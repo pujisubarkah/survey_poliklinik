@@ -11,7 +11,7 @@ import { ref, onMounted } from 'vue'
 import QRCode from 'qrcode'
 
 const canvasRef = ref(null)
-const surveyURL = 'https://surveypoliklinik.netlify.app/form/' // Ganti dengan domain real-mu
+const surveyURL = 'https://surveypoliklinik.netlify.app' // Ganti dengan domain real-mu
 
 onMounted(() => {
   if (canvasRef.value) {

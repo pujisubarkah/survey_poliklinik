@@ -2,7 +2,7 @@
   <div class="min-h-screen overflow-y-auto bg-gray-100 py-6 px-4">
     <div class="max-w-2xl w-full mx-auto bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-10">
       <h2 class="text-2xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center">
-        Isikan kepuasan anda terhadap pelayanan kami
+        Isikan kepuasan anda terhadap pelayanan Poliklinik LAN
       </h2>
       <form v-if="!submitted" @submit.prevent="handleSubmit">
         <div v-for="(q, qIdx) in questions" :key="qIdx" class="mb-6">
