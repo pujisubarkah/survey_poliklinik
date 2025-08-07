@@ -22,9 +22,6 @@
               <span class="text-xs sm:text-sm font-medium mt-1 text-center">{{ emojiLabels[idx] }}</span>
             </button>
           </div>
-          <div v-if="selectedKepuasan[qIdx]" class="mt-2 text-center text-base sm:text-lg">
-            Nilai: {{ selectedKepuasan[qIdx] }}
-          </div>
         </div>
 
         <button type="submit" class="btn btn-primary btn-md sm:btn-lg w-full mt-4 sm:mt-6">
