@@ -81,7 +81,7 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="pegawai in filteredPegawai" :key="pegawai.id">
+            <tr v-for="pegawai in paginatedPegawai" :key="pegawai.id">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center">
@@ -104,7 +104,7 @@
                 {{ pegawai.nip }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ pegawai.unitKerja }}
+                {{ pegawai.nama_unit_kerja }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span 
@@ -141,16 +141,24 @@
     <!-- Pagination -->
     <div class="mt-6 flex items-center justify-between">
       <div class="text-sm text-gray-700">
-        Menampilkan {{ filteredPegawai.length }} dari {{ pegawaiData.length }} data
+        Menampilkan {{ paginatedPegawai.length }} dari {{ filteredPegawai.length }} data (halaman {{ currentPage }} dari {{ totalPages }})
       </div>
       <div class="flex space-x-2">
-        <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
+        <button
+          class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50"
+          :disabled="currentPage === 1"
+          @click="currentPage = Math.max(1, currentPage - 1)"
+        >
           Sebelumnya
         </button>
-        <button class="px-3 py-1 bg-blue-600 text-white rounded text-sm">
-          1
-        </button>
-        <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
+        <span class="px-3 py-1 bg-blue-600 text-white rounded text-sm">
+          {{ currentPage }}
+        </span>
+        <button
+          class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50"
+          :disabled="currentPage === totalPages"
+          @click="currentPage = Math.min(totalPages, currentPage + 1)"
+        >
           Selanjutnya
         </button>
       </div>
@@ -189,6 +197,7 @@
                     :src="selectedPegawai.foto" 
                     :alt="selectedPegawai.nama"
                     class="w-32 h-32 rounded-full object-cover border-4 border-gray-200 shadow-lg"
+                    @error="e => e.target.style.display = 'none'"
                   >
                   <div 
                     v-else
@@ -332,7 +341,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 // Set layout
 definePageMeta({
@@ -346,112 +355,16 @@ const filterStatus = ref('')
 const showAddModal = ref(false)
 const showDetailModalRef = ref(false)
 const selectedPegawai = ref(null)
+const currentPage = ref(1)
+const itemsPerPage = 10
 
 // Sample data
-const pegawaiData = ref([
-  {
-    id: 1,
-    nama: 'Budi Santoso',
-    nip: '198501012010011001',
-    email: 'budi.santoso@lan.go.id',
-    telepon: '08123456789',
-    jabatan: 'Analis Kebijakan Ahli Madya',
-    unitKerja: 'Bidang PKP2A',
-    statusKepegawaian: 'PNS',
-    tanggalLahir: '1985-01-01',
-    jenisKelamin: 'Laki-laki',
-    alamat: 'Jl. Sudirman No. 123, Jakarta Pusat',
-    pendidikan: 'S2 Administrasi Publik',
-    golongan: 'III/c',
-    tanggalBergabung: '2010-01-01',
-    riwayatBerobat: [
-      { tanggal: '2024-01-15', keluhan: 'Sakit kepala', diagnosa: 'Tension headache' },
-      { tanggal: '2024-02-20', keluhan: 'Flu', diagnosa: 'Common cold' }
-    ],
-    foto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face'
-  },
-  {
-    id: 2,
-    nama: 'Sari Dewi',
-    nip: '198703152012012002',
-    email: 'sari.dewi@lan.go.id',
-    telepon: '08234567890',
-    jabatan: 'Pranata Komputer Ahli Muda',
-    unitKerja: 'Sekretariat',
-    statusKepegawaian: 'PNS',
-    tanggalLahir: '1987-03-15',
-    jenisKelamin: 'Perempuan',
-    alamat: 'Jl. Thamrin No. 456, Jakarta Pusat',
-    pendidikan: 'S1 Teknik Informatika',
-    golongan: 'III/a',
-    tanggalBergabung: '2012-01-02',
-    riwayatBerobat: [
-      { tanggal: '2024-01-10', keluhan: 'Mata minus', diagnosa: 'Myopia' }
-    ],
-    foto: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200&h=200&fit=crop&crop=face'
-  },
-  {
-    id: 3,
-    nama: 'Ahmad Fauzi',
-    nip: '198906082015011003',
-    email: 'ahmad.fauzi@lan.go.id',
-    telepon: '08345678901',
-    jabatan: 'Auditor Ahli Pertama',
-    unitKerja: 'Bidang SPKN',
-    statusKepegawaian: 'PPPK',
-    tanggalLahir: '1989-06-08',
-    jenisKelamin: 'Laki-laki',
-    alamat: 'Jl. Gatot Subroto No. 789, Jakarta Selatan',
-    pendidikan: 'S1 Akuntansi',
-    golongan: 'III/a',
-    tanggalBergabung: '2015-01-03',
-    riwayatBerobat: [
-      { tanggal: '2024-01-25', keluhan: 'Hipertensi', diagnosa: 'Essential hypertension' },
-      { tanggal: '2024-02-15', keluhan: 'Kontrol tekanan darah', diagnosa: 'Hypertension follow-up' }
-    ],
-    foto: null
-  },
-  {
-    id: 4,
-    nama: 'Indira Putri',
-    nip: '199002201018012004',
-    email: 'indira.putri@lan.go.id',
-    telepon: '08456789012',
-    jabatan: 'Peneliti Ahli Muda',
-    unitKerja: 'Pusat Inovasi',
-    statusKepegawaian: 'PNS',
-    tanggalLahir: '1990-02-20',
-    jenisKelamin: 'Perempuan',
-    alamat: 'Jl. Kuningan No. 321, Jakarta Selatan',
-    pendidikan: 'S2 Ilmu Politik',
-    golongan: 'III/b',
-    tanggalBergabung: '2018-01-04',
-    riwayatBerobat: [
-      { tanggal: '2024-01-08', keluhan: 'Medical Check Up', diagnosa: 'Sehat' }
-    ],
-    foto: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face'
-  },
-  {
-    id: 5,
-    nama: 'Rizki Pratama',
-    nip: '199105101019011005',
-    email: 'rizki.pratama@lan.go.id',
-    telepon: '08567890123',
-    jabatan: 'Widyaiswara Ahli Muda',
-    unitKerja: 'PSDM',
-    statusKepegawaian: 'PNS',
-    tanggalLahir: '1991-05-10',
-    jenisKelamin: 'Laki-laki',
-    alamat: 'Jl. HR Rasuna Said No. 654, Jakarta Selatan',
-    pendidikan: 'S2 Manajemen SDM',
-    golongan: 'III/b',
-    tanggalBergabung: '2019-01-05',
-    riwayatBerobat: [
-      { tanggal: '2024-02-01', keluhan: 'Gastritis', diagnosa: 'Acute gastritis' }
-    ],
-    foto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face'
-  }
-])
+const pegawaiData = ref([])
+
+onMounted(async () => {
+  const res = await fetch('/api/pegawai')
+  pegawaiData.value = await res.json()
+})
 
 // Computed
 const filteredPegawai = computed(() => {
@@ -462,19 +375,23 @@ const filteredPegawai = computed(() => {
     filtered = filtered.filter(pegawai => 
       pegawai.nama.toLowerCase().includes(query) ||
       pegawai.nip.includes(query) ||
-      pegawai.unitKerja.toLowerCase().includes(query)
+      (pegawai.nama_unit_kerja || '').toLowerCase().includes(query)
     )
   }
-
-  if (filterJabatan.value) {
-    filtered = filtered.filter(pegawai => pegawai.unitKerja === filterJabatan.value)
-  }
-
-  if (filterStatus.value) {
-    filtered = filtered.filter(pegawai => pegawai.statusKepegawaian === filterStatus.value)
-  }
-
+  // filterJabatan dan filterStatus bisa diaktifkan jika field tersedia di API
+  // if (filterJabatan.value) {
+  //   filtered = filtered.filter(pegawai => pegawai.unitKerja === filterJabatan.value)
+  // }
+  // if (filterStatus.value) {
+  //   filtered = filtered.filter(pegawai => pegawai.statusKepegawaian === filterStatus.value)
+  // }
   return filtered
+})
+
+const totalPages = computed(() => Math.ceil(filteredPegawai.value.length / itemsPerPage))
+const paginatedPegawai = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  return filteredPegawai.value.slice(start, start + itemsPerPage)
 })
 
 // Methods

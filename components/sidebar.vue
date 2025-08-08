@@ -25,7 +25,7 @@
           </div>
           <div>
             <h2 class="text-lg font-bold text-white">Admin Panel</h2>
-            <p class="text-sm text-blue-100">Poliklinik LAN</p>
+            <p class="text-sm text-blue-100">Klinik LAN Jakarta</p>
           </div>
         </div>
         <!-- Close button for mobile -->
@@ -40,6 +40,19 @@
       <!-- Navigation Menu -->
       <nav class="mt-6 px-4">
         <ul class="space-y-2">
+          <!-- Pemeriksaan (paling atas) -->
+          <li>
+            <NuxtLink 
+              to="/admin/pemeriksaan" 
+              class="nav-link"
+              :class="{ 'active': $route.path === '/admin/pemeriksaan' }"
+            >
+              <i class="fas fa-user-md nav-icon"></i>
+              <span>Pemeriksaan</span>
+            </NuxtLink>
+          </li>
+          <!-- Divider -->
+          <li class="border-t border-gray-200 my-4"></li>
           <!-- Dashboard -->
           <li>
             <NuxtLink 
@@ -75,35 +88,14 @@
               <span>QR Code</span>
             </NuxtLink>
           </li>
-
-          <!-- Data Transaksi Divider -->
+          <!-- Divider -->
           <li class="border-t border-gray-200 my-4"></li>
-          <li>
-            <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Data Transaksi
-            </div>
-          </li>
-
-          <!-- Pemeriksaan -->
-          <li>
-            <NuxtLink 
-              to="/admin/pemeriksaan" 
-              class="nav-link"
-              :class="{ 'active': $route.path === '/admin/pemeriksaan' }"
-            >
-              <i class="fas fa-user-md nav-icon"></i>
-              <span>Pemeriksaan</span>
-            </NuxtLink>
-          </li>
-
-          <!-- Master Data Divider -->
-          <li class="border-t border-gray-200 my-4"></li>
+          <!-- Master Data Section -->
           <li>
             <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Master Data
             </div>
           </li>
-
           <!-- Pegawai -->
           <li>
             <NuxtLink 
@@ -139,10 +131,8 @@
               <span>Master Obat</span>
             </NuxtLink>
           </li>
-
-          <!-- Settings Divider -->
+          <!-- Divider for Settings -->
           <li class="border-t border-gray-200 my-4"></li>
-
           <!-- Settings -->
           <li>
             <NuxtLink 
