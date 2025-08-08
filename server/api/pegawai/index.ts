@@ -1,5 +1,6 @@
 import { db } from '../../database';
 import { pegawai } from '../../database/schema/pegawai';
+import { pegawai_detail } from '../../database/schema/pegawai_detail';
 import { eq } from 'drizzle-orm/pg-core/expressions';
 import { unitkerja } from '../../database/schema/unitkerja';
 
@@ -15,10 +16,13 @@ export default defineEventHandler(async (event) => {
         jabatan: pegawai.jabatan,
         golongan: pegawai.golongan,
         eselon: pegawai.eselon,
-        nama_unit_kerja: unitkerja.nama_unit_kerja
+        nama_unit_kerja: unitkerja.nama_unit_kerja,
+        // join ke pegawai_detail
+        detail: pegawai_detail
       })
       .from(pegawai)
-      .leftJoin(unitkerja, eq(pegawai.unit_kerja_id, unitkerja.id));
+      .leftJoin(unitkerja, eq(pegawai.unit_kerja_id, unitkerja.id))
+      .leftJoin(pegawai_detail, eq(pegawai.nip, pegawai_detail.nip));
     // Tambahkan field foto berdasarkan nip
     const withFoto = data.map(p => ({
       ...p,

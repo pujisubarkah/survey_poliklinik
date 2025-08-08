@@ -230,7 +230,7 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.email }}</p>
+                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.detail?.email || '-' }}</p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
@@ -238,7 +238,7 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Unit Kerja</label>
-                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.unitKerja }}</p>
+                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.nama_unit_kerja || '-' }}</p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Golongan</label>
@@ -246,15 +246,15 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Status Kepegawaian</label>
-                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.statusKepegawaian }}</p>
+                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.detail?.status_kepegawaian || '-' }}</p>
                 </div>
                 <div class="sm:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.alamat || '-' }}</p>
+                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.detail?.alamat || '-' }}</p>
                 </div>
                 <div class="sm:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
-                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.pendidikan || '-' }}</p>
+                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.detail?.pendidikan || '-' }}</p>
                 </div>
               </div>
             </div>
@@ -266,19 +266,19 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
-                <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.telepon || '-' }}</p>
+                <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.detail?.telp || '-' }}</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
-                <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ formatDate(selectedPegawai.tanggalLahir) || '-' }}</p>
+                <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ formatDate(selectedPegawai.detail?.tanggal_lahir) || '-' }}</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
-                <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.jenisKelamin || '-' }}</p>
+                <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.detail?.jenis_kelamin || '-' }}</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Bergabung di LAN</label>
-                <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ formatDate(selectedPegawai.tanggalBergabung) || '-' }}</p>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Golongan Darah</label>
+                <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.detail?.nm_goldar || '-' }}</p>
               </div>
             </div>
           </div>
