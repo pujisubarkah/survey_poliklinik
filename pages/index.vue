@@ -5,9 +5,14 @@
     <p class="text-lg sm:text-xl text-gray-700 mb-8 text-center max-w-xl">
       Terima kasih telah bersedia berpartisipasi dalam survey ini. Pendapat Anda sangat berarti untuk meningkatkan kualitas pelayanan kami.
     </p>
-    <NuxtLink to="/form">
-      <button class="btn btn-primary btn-lg">Mulai Survey</button>
-    </NuxtLink>
+    <div class="flex flex-col sm:flex-row gap-4 items-center">
+      <NuxtLink to="/form">
+        <button class="btn btn-primary btn-lg">Mulai Survey</button>
+      </NuxtLink>
+      <NuxtLink to="/login">
+        <button class="btn btn-secondary btn-lg">Login Admin</button>
+      </NuxtLink>
+    </div>
   </div>
 </template>
 

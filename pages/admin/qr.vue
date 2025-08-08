@@ -10,6 +10,10 @@
 import { ref, onMounted } from 'vue'
 import QRCode from 'qrcode'
 
+definePageMeta({
+  layout: 'admin'
+})
+
 const canvasRef = ref(null)
 const surveyURL = 'https://surveypoliklinik.netlify.app' // Ganti dengan domain real-mu
 
