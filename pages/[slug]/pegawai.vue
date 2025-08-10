@@ -119,16 +119,18 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex space-x-2">
                   <button 
-                    @click="editPegawai(pegawai)"
+                    @click="handleEditPegawai(pegawai)"
                     class="text-blue-600 hover:text-blue-900"
                   >
                     <i class="fas fa-edit"></i>
                   </button>
                   <button 
-                    @click="deletePegawai(pegawai.id)"
+                    @click="handleDeletePegawai(pegawai.id)"
+                    :disabled="deletingId === pegawai.id"
                     class="text-red-600 hover:text-red-900"
                   >
-                    <i class="fas fa-trash"></i>
+                    <i v-if="deletingId === pegawai.id" class="fas fa-spinner fa-spin"></i>
+                    <i v-else class="fas fa-trash"></i>
                   </button>
                 </div>
               </td>
@@ -251,6 +253,18 @@
                 <div class="sm:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
                   <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ selectedPegawai.detail?.alamat || '-' }}</p>
+                  <div v-if="selectedPegawai.detail?.alamat" class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi di Google Maps</label>
+                    <iframe
+                      :src="`https://www.google.com/maps?q=${encodeURIComponent(selectedPegawai.detail.alamat)}&output=embed`"
+                      width="100%"
+                      height="250"
+                      style="border:0;"
+                      allowfullscreen=""
+                      loading="lazy"
+                      referrerpolicy="no-referrer-when-downgrade"
+                    ></iframe>
+                  </div>
                 </div>
                 <div class="sm:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
@@ -434,16 +448,63 @@ const formatRupiah = (amount) => {
   }).format(amount)
 }
 
-const editPegawai = (pegawai) => {
-  console.log('Edit pegawai:', pegawai)
-  // Implement edit functionality
-}
-
-const deletePegawai = (id) => {
-  if (confirm('Apakah Anda yakin ingin menghapus pegawai ini?')) {
-    pegawaiData.value = pegawaiData.value.filter(p => p.id !== id)
+// Handle edit pegawai (PUT ke API)
+const handleEditPegawai = async (pegawai) => {
+  // Contoh: tampilkan prompt sederhana, bisa diganti dengan modal form edit
+  const namaBaru = prompt('Edit nama pegawai:', pegawai.nama)
+  if (namaBaru && namaBaru !== pegawai.nama) {
+    const res = await fetch(`/api/pegawai/${pegawai.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...pegawai, nama: namaBaru })
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      // Update data di frontend
+      const idx = pegawaiData.value.findIndex(p => p.id === pegawai.id)
+      if (idx !== -1) pegawaiData.value[idx] = { ...pegawaiData.value[idx], ...updated }
+      alert('Data pegawai berhasil diupdate!')
+    } else {
+      alert('Gagal update data pegawai!')
+    }
   }
 }
+
+const deletingId = ref(null)
+// Handle delete pegawai (DELETE ke API)
+const handleDeletePegawai = async (id) => {
+  if (!confirm('Apakah Anda yakin ingin menghapus pegawai ini? Data yang dihapus tidak dapat dikembalikan.')) {
+    return;
+  }
+  deletingId.value = id;
+  try {
+    const res = await fetch(`/api/pegawai/${id}`, {
+      method: 'DELETE'
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.error || `Gagal menghapus pegawai (Status: ${res.status})`);
+    }
+
+    // Hapus dari data lokal
+    pegawaiData.value = pegawaiData.value.filter(p => p.id !== id);
+
+    // Reset pagination jika perlu
+    if (currentPage.value > totalPages.value && totalPages.value > 0) {
+      currentPage.value = totalPages.value;
+    }
+
+    alert(result.message || 'Data pegawai berhasil dihapus!');
+  } catch (error) {
+    console.error('Error deleting pegawai:', error);
+    alert(`Gagal menghapus data pegawai: ${error.message}`);
+  } finally {
+    deletingId.value = null;
+  }
+};
+
 
 // SEO
 useSeoMeta({

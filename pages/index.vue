@@ -137,6 +137,9 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import { useUserStore } from '~/stores/user'
+
+const userStore = useUserStore()
 
 // Page meta
 definePageMeta({
@@ -182,38 +185,37 @@ const validateForm = () => {
 }
 
 const handleLogin = async () => {
-  if (!validateForm()) {
-    return
-  }
+  if (!validateForm()) return
 
   isLoading.value = true
 
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Here you would typically make an API call to authenticate
-    console.log('Login attempt:', {
-      username: loginForm.username,
-      password: loginForm.password,
-      captcha: loginForm.captcha
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: loginForm.username,
+        password: loginForm.password
+      })
     })
+    const result = await res.json()
 
-    // For demo purposes, show success message
-    alert('Login berhasil! (Demo mode)')
-    
-    // Redirect to admin dashboard
-    await navigateTo('/admin/dashboard')
-    
+    if (!res.ok || !result.success) {
+      throw new Error(result.error || 'Login gagal. Silakan coba lagi.')
+    }
+
+  // Buat slug dari nama user
+  const nama = result.user.nama || result.user.username
+  const slug = nama.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+
+  // Set user data to store
+  userStore.setUser(result.user)
+
+  alert('Login berhasil!')
+  await navigateTo(`/${slug}/dashboard`)
   } catch (error) {
-    console.error('Login error:', error)
-    
-    // Show captcha if login fails multiple times
     showCaptcha.value = true
-    
-    // Show error message
-    alert('Login gagal. Silakan coba lagi.')
-    
+    alert(error.message)
   } finally {
     isLoading.value = false
   }

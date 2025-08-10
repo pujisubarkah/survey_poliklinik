@@ -38,8 +38,8 @@
                 <i class="fas fa-user-md text-white text-sm"></i>
               </div>
               <div class="text-sm">
-                <p class="font-medium text-gray-800">Admin</p>
-                <p class="text-gray-600">Administrator</p>
+                <p class="font-medium text-gray-800">{{ userStore.user?.nama || 'Admin' }}</p>
+                <p class="text-gray-600">{{ userStore.user?.email || 'Administrator' }}</p>
               </div>
               <!-- Dropdown Menu -->
               <div class="relative">
@@ -85,6 +85,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useUserStore } from '~/stores/user'
+
+const userStore = useUserStore()
 
 // Props
 const props = defineProps({
@@ -105,11 +108,12 @@ const emit = defineEmits(['toggleSidebar'])
 const showDropdown = ref(false)
 
 // Methods
+
 const logout = async () => {
   if (confirm('Apakah Anda yakin ingin logout?')) {
     showDropdown.value = false
-    // Clear authentication tokens here
-    await navigateTo('/login')
+    userStore.logout()
+    await navigateTo('/')
   }
 }
 

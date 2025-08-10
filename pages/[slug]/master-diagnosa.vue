@@ -35,10 +35,7 @@
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Semua Kategori</option>
-            <option value="Penyakit Umum">Penyakit Umum</option>
-            <option value="Penyakit Kronis">Penyakit Kronis</option>
-            <option value="Penyakit Menular">Penyakit Menular</option>
-            <option value="Cedera">Cedera</option>
+            <option v-for="kategori in kategoriList" :key="kategori" :value="kategori">{{ kategori }}</option>
           </select>
         </div>
         <div>
@@ -127,16 +124,30 @@
     <!-- Pagination -->
     <div class="mt-6 flex items-center justify-between">
       <div class="text-sm text-gray-700">
-        Menampilkan {{ filteredDiagnosa.length }} dari {{ diagnosaData.length }} data
+        Menampilkan {{ filteredDiagnosa.length }} dari {{ filteredDiagnosaAll.length }} data (Halaman {{ currentPage }} dari {{ totalPages }})
       </div>
       <div class="flex space-x-2">
-        <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
+        <button
+          class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50"
+          :disabled="currentPage === 1"
+          @click="currentPage--"
+        >
           Sebelumnya
         </button>
-        <button class="px-3 py-1 bg-blue-600 text-white rounded text-sm">
-          1
-        </button>
-        <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
+        <span v-for="page in totalPages" :key="page">
+          <button
+            class="px-3 py-1 rounded text-sm"
+            :class="page === currentPage ? 'bg-blue-600 text-white' : 'border border-gray-300 hover:bg-gray-50'"
+            @click="currentPage = page"
+          >
+            {{ page }}
+          </button>
+        </span>
+        <button
+          class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50"
+          :disabled="currentPage === totalPages"
+          @click="currentPage++"
+        >
           Selanjutnya
         </button>
       </div>
@@ -145,7 +156,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 // Set layout
 definePageMeta({
@@ -158,72 +169,62 @@ const filterKategori = ref('')
 const filterStatus = ref('')
 const showAddModal = ref(false)
 
-// Sample data
-const diagnosaData = ref([
-  {
-    id: 1,
-    kode_icd: 'A09',
-    nama: 'Diare dan Gastroenteritis',
-    deskripsi: 'Infeksi saluran pencernaan yang menyebabkan diare',
-    kategori: 'Penyakit Umum',
-    status: 'Aktif'
-  },
-  {
-    id: 2,
-    kode_icd: 'K29.7',
-    nama: 'Gastritis',
-    deskripsi: 'Peradangan pada dinding lambung',
-    kategori: 'Penyakit Umum',
-    status: 'Aktif'
-  },
-  {
-    id: 3,
-    kode_icd: 'I10',
-    nama: 'Hipertensi Esensial',
-    deskripsi: 'Tekanan darah tinggi tanpa penyebab yang jelas',
-    kategori: 'Penyakit Kronis',
-    status: 'Aktif'
-  },
-  {
-    id: 4,
-    kode_icd: 'E11.9',
-    nama: 'Diabetes Mellitus Tipe 2',
-    deskripsi: 'Diabetes tanpa komplikasi',
-    kategori: 'Penyakit Kronis',
-    status: 'Aktif'
-  },
-  {
-    id: 5,
-    kode_icd: 'S06.0',
-    nama: 'Gegar Otak',
-    deskripsi: 'Cedera kepala ringan',
-    kategori: 'Cedera',
-    status: 'Tidak Aktif'
+// Data from API
+const diagnosaData = ref([])
+
+onMounted(async () => {
+  try {
+    const res = await $fetch('/api/diagnosa')
+    if (res.success) {
+      diagnosaData.value = res.data.map(item => ({
+        id: item.id,
+        kode_icd: item.kode_icd,
+        nama: item.nama_diagnosa,
+        kategori: item.kategori,
+        status: 'Aktif', // default, bisa diubah jika ada field status di DB
+      }))
+    }
+  } catch (e) {
+    console.error('Gagal fetch data diagnosa', e)
   }
-])
+})
 
-// Computed
-const filteredDiagnosa = computed(() => {
+// Kategori dinamis
+const kategoriList = computed(() => {
+  const set = new Set()
+  diagnosaData.value.forEach(item => {
+    if (item.kategori) set.add(item.kategori)
+  })
+  return Array.from(set)
+})
+
+// Pagination logic
+const currentPage = ref(1)
+const itemsPerPage = 20
+
+const filteredDiagnosaAll = computed(() => {
   let filtered = diagnosaData.value
-
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(diagnosa => 
+    filtered = filtered.filter(diagnosa =>
       diagnosa.kode_icd.toLowerCase().includes(query) ||
-      diagnosa.nama.toLowerCase().includes(query) ||
-      diagnosa.deskripsi.toLowerCase().includes(query)
+      diagnosa.nama.toLowerCase().includes(query)
     )
   }
-
   if (filterKategori.value) {
     filtered = filtered.filter(diagnosa => diagnosa.kategori === filterKategori.value)
   }
-
   if (filterStatus.value) {
     filtered = filtered.filter(diagnosa => diagnosa.status === filterStatus.value)
   }
-
   return filtered
+})
+
+const totalPages = computed(() => Math.ceil(filteredDiagnosaAll.value.length / itemsPerPage) || 1)
+
+const filteredDiagnosa = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  return filteredDiagnosaAll.value.slice(start, start + itemsPerPage)
 })
 
 // Methods

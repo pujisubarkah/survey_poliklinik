@@ -175,16 +175,30 @@
     <!-- Pagination -->
     <div class="mt-6 flex items-center justify-between">
       <div class="text-sm text-gray-700">
-        Menampilkan {{ filteredObat.length }} dari {{ obatData.length }} data
+        Menampilkan {{ filteredObat.length }} dari {{ filteredObatAll.length }} data (Halaman {{ currentPage }} dari {{ totalPages }})
       </div>
       <div class="flex space-x-2">
-        <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
+        <button
+          class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50"
+          :disabled="currentPage === 1"
+          @click="currentPage--"
+        >
           Sebelumnya
         </button>
-        <button class="px-3 py-1 bg-blue-600 text-white rounded text-sm">
-          1
-        </button>
-        <button class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
+        <span v-for="page in totalPages" :key="page">
+          <button
+            class="px-3 py-1 rounded text-sm"
+            :class="page === currentPage ? 'bg-blue-600 text-white' : 'border border-gray-300 hover:bg-gray-50'"
+            @click="currentPage = page"
+          >
+            {{ page }}
+          </button>
+        </span>
+        <button
+          class="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50"
+          :disabled="currentPage === totalPages"
+          @click="currentPage++"
+        >
           Selanjutnya
         </button>
       </div>
@@ -204,7 +218,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+
+import { ref, computed, onMounted } from 'vue'
 
 // Set layout
 definePageMeta({
@@ -218,86 +233,60 @@ const filterBentuk = ref('')
 const filterStatus = ref('')
 const showAddModal = ref(false)
 
-// Sample data
-const obatData = ref([
-  {
-    id: 1,
-    nama: 'Paracetamol',
-    merk: 'Sanmol',
-    bahan_aktif: 'Paracetamol 500mg',
-    kategori: 'Analgesik',
-    bentuk_sediaan: 'Tablet',
-    stok: 150,
-    status: 'Tersedia'
-  },
-  {
-    id: 2,
-    nama: 'Amoxicillin',
-    merk: 'Amoxsan',
-    bahan_aktif: 'Amoxicillin 500mg',
-    kategori: 'Antibiotik',
-    bentuk_sediaan: 'Kapsul',
-    stok: 85,
-    status: 'Tersedia'
-  },
-  {
-    id: 3,
-    nama: 'Cetirizine',
-    merk: 'Incidal',
-    bahan_aktif: 'Cetirizine HCl 10mg',
-    kategori: 'Antihistamin',
-    bentuk_sediaan: 'Tablet',
-    stok: 15,
-    status: 'Tersedia'
-  },
-  {
-    id: 4,
-    nama: 'Vitamin B Complex',
-    merk: 'Neurobion',
-    bahan_aktif: 'B1, B6, B12',
-    kategori: 'Vitamin',
-    bentuk_sediaan: 'Tablet',
-    stok: 200,
-    status: 'Tersedia'
-  },
-  {
-    id: 5,
-    nama: 'Omeprazole',
-    merk: 'Promezol',
-    bahan_aktif: 'Omeprazole 20mg',
-    kategori: 'Antacid',
-    bentuk_sediaan: 'Kapsul',
-    stok: 0,
-    status: 'Habis'
+// Data from API
+const obatData = ref([])
+
+onMounted(async () => {
+  try {
+    const res = await $fetch('/api/master_obat')
+    if (res.success) {
+      // Map API fields to frontend fields
+      obatData.value = res.data.map(item => ({
+        id: item.id,
+        nama: item.nama_obat,
+        bahan_aktif: item.kandungan_aktif,
+        kategori: item.kategori_obat,
+        bentuk_sediaan: item.kategori_sediaan,
+        stok: item.stok_akhir,
+        tanggal_update: item.tanggal_update,
+        status: item.stok_akhir > 0 ? 'Tersedia' : 'Habis',
+      }))
+    }
+  } catch (e) {
+    console.error('Gagal fetch data master_obat', e)
   }
-])
+})
 
-// Computed
-const filteredObat = computed(() => {
+// Pagination logic
+const currentPage = ref(1)
+const itemsPerPage = 20
+
+const filteredObatAll = computed(() => {
   let filtered = obatData.value
-
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(obat => 
+    filtered = filtered.filter(obat =>
       obat.nama.toLowerCase().includes(query) ||
-      obat.merk.toLowerCase().includes(query) ||
       obat.bahan_aktif.toLowerCase().includes(query)
     )
   }
-
   if (filterKategori.value) {
     filtered = filtered.filter(obat => obat.kategori === filterKategori.value)
   }
-
   if (filterBentuk.value) {
     filtered = filtered.filter(obat => obat.bentuk_sediaan === filterBentuk.value)
   }
-
   if (filterStatus.value) {
     filtered = filtered.filter(obat => obat.status === filterStatus.value)
   }
-
   return filtered
+})
+
+const totalPages = computed(() => Math.ceil(filteredObatAll.value.length / itemsPerPage) || 1)
+
+const filteredObat = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  return filteredObatAll.value.slice(start, start + itemsPerPage)
 })
 
 const obatStokRendah = computed(() => {

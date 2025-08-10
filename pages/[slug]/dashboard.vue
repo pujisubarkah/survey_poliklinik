@@ -1,10 +1,11 @@
 <!-- pages/admin/dashboard.vue -->
 <template>
-  <div>
+  <div class="pt-8 md:pt-8">
     <!-- Welcome Section -->
     <div class="mb-8">
-      <h2 class="text-2xl font-bold text-gray-800 mb-2">Selamat Datang di Dashboard Admin</h2>
-      <p class="text-gray-600">Ringkasan dan statistik sistem Poliklinik LAN</p>
+  <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ greeting }}, {{ displayName }}!</h2>
+  <p class="text-blue-700 font-semibold mb-1">Sehat Selalu yah! Jangan sakit, nanti yang jaga klinik siapa kalau sakit 😊</p>
+  <p class="text-gray-600">Ini adalah Ringkasan dan Statistik Klinik Kita. Ringkasan dan statistik sistem klinik LAN</p>
     </div>
 
     <!-- Stats Cards -->
@@ -128,8 +129,28 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+// Greeting by time
+const greeting = computed(() => {
+  const hour = new Date().getHours()
+  if (hour < 11) return 'Selamat Pagi'
+  if (hour < 15) return 'Selamat Siang'
+  if (hour < 18) return 'Selamat Sore'
+  return 'Selamat Malam'
+})
+import { useRoute } from 'vue-router'
 import * as echarts from 'echarts'
+// Ambil nama dari slug route dan format agar lebih rapi
+const route = useRoute()
+const displayName = computed(() => {
+  const slug = route.params.slug || ''
+  // Ubah slug ke format nama (rindra-hidayat => Rindra Hidayat)
+  return slug
+    .toString()
+    .split('-')
+    .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(' ')
+})
 
 // Set layout
 definePageMeta({

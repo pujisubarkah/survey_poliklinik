@@ -149,7 +149,7 @@
                     <span class="text-white font-medium text-sm">
                       {{ exam.pasien.nama.charAt(0).toUpperCase() }}
                     </span>
-                  </div>
+                    </div>
                   <div class="ml-4">
                     <div class="text-sm font-medium text-gray-900">{{ exam.pasien.nama }}</div>
                     <div class="text-sm text-gray-500">{{ exam.pasien.nip }}</div>
@@ -158,12 +158,12 @@
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ formatDateTime(exam.tanggalPemeriksaan) }}</div>
-                <div class="text-sm text-gray-500">{{ exam.waktuPemeriksaan }}</div>
+                <div class="text-sm text-gray-900">{{ formatDateTime(exam.tanggal_pemeriksaan, exam.waktu_pemeriksaan) }}</div>
+                <div class="text-sm text-gray-500">{{ exam.waktu_pemeriksaan }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                  {{ exam.jenisPemeriksaan }}
+                  {{ exam.jenis_pemeriksaan }}
                 </span>
               </td>
               <td class="px-6 py-4">
@@ -250,38 +250,35 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Nama Pegawai</label>
               <input
                 v-model="newExam.pasien.nama"
-                type="text"
+                list="pegawai-nama-list"
                 required
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Masukkan nama pegawai"
+                placeholder="Ketik nama pegawai"
               >
+              <datalist id="pegawai-nama-list">
+                <option v-for="p in pegawaiList" :key="p.nip" :value="p.nama">{{ p.nama }} ({{ p.nip }})</option>
+              </datalist>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">NIP</label>
               <input
                 v-model="newExam.pasien.nip"
                 type="text"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Masukkan NIP"
+                readonly
+                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 focus:outline-none"
+                placeholder="NIP Pegawai"
               >
             </div>
           </div>
-
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Unit Kerja</label>
-            <select
+            <input
               v-model="newExam.pasien.unitKerja"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="text"
+              readonly
+              class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 focus:outline-none"
+              placeholder="Unit Kerja"
             >
-              <option value="">Pilih Unit Kerja</option>
-              <option value="Sekretariat">Sekretariat</option>
-              <option value="Bidang PKP2A">Bidang PKP2A</option>
-              <option value="Bidang SPKN">Bidang SPKN</option>
-              <option value="Bidang KAP">Bidang KAP</option>
-              <option value="Pusat Kajian dan Diklat">Pusat Kajian dan Diklat</option>
-            </select>
           </div>
 
           <!-- Tanggal dan Waktu Pemeriksaan -->
@@ -338,12 +335,17 @@
           <!-- Diagnosis -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Diagnosis</label>
-            <textarea
-              v-model="newExam.diagnosis"
-              rows="2"
+            <input
+              v-model="diagnosisInput"
+              list="diagnosa-list"
+              required
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Masukkan diagnosis"
-            ></textarea>
+              placeholder="Ketik diagnosis atau pilih"
+              @change="onDiagnosisChange"
+            >
+            <datalist id="diagnosa-list">
+              <option v-for="d in diagnosaList" :key="d.id" :value="d.nama_diagnosa">{{ d.nama_diagnosa }}</option>
+            </datalist>
           </div>
 
           <!-- Tindakan -->
@@ -361,29 +363,35 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Obat *</label>
             <div class="space-y-3">
-              <div v-for="(obat, index) in newExam.obatList" :key="index" class="flex gap-2">
-                <select
-                  v-model="obat.nama"
-                  required
-                  class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Pilih Obat</option>
-                  <option value="Paracetamol 500mg">Paracetamol 500mg</option>
-                  <option value="Ibuprofen 400mg">Ibuprofen 400mg</option>
-                  <option value="Amoxicillin 500mg">Amoxicillin 500mg</option>
-                  <option value="Omeprazole 20mg">Omeprazole 20mg</option>
-                  <option value="Amlodipine 5mg">Amlodipine 5mg</option>
-                  <option value="Metformin 500mg">Metformin 500mg</option>
-                  <option value="Vitamin B Complex">Vitamin B Complex</option>
-                  <option value="Antasida">Antasida</option>
-                  <option value="CTM 4mg">CTM 4mg</option>
-                  <option value="Dexamethasone">Dexamethasone</option>
-                </select>
+              <div v-for="(obat, index) in newExam.obatList" :key="index" class="flex gap-2 items-start">
+                <div class="flex-1">
+                  <input
+                    v-model="obat.nama"
+                    list="obat-list"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ketik nama obat"
+                  >
+                  <datalist id="obat-list">
+                    <option v-for="o in masterObatList" :key="o.id" :value="o.nama_obat">{{ o.nama_obat }} (Stok: {{ o.stok_akhir }})</option>
+                  </datalist>
+                  <p v-if="obat.nama && getStokObat(obat.nama) === 0" class="text-xs text-red-600 mt-1">Stok habis, tidak bisa diberikan</p>
+                </div>
+                <div class="w-20">
+                  <input
+                    type="text"
+                    readonly
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 focus:outline-none text-center"
+                    placeholder="Stok"
+                    :value="obat.nama ? getStokObat(obat.nama) : ''"
+                  >
+                </div>
                 <input
                   v-model="obat.dosis"
                   type="text"
                   placeholder="Dosis (3x1)"
                   class="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  :disabled="obat.nama && getStokObat(obat.nama) === 0"
                 >
                 <input
                   v-model="obat.jumlah"
@@ -391,6 +399,7 @@
                   placeholder="Jml"
                   min="1"
                   class="w-16 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  :disabled="obat.nama && getStokObat(obat.nama) === 0"
                 >
                 <button
                   v-if="newExam.obatList.length > 1"
@@ -401,6 +410,7 @@
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
+
               <button
                 @click="addObat"
                 type="button"
@@ -465,7 +475,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 // Set layout
 definePageMeta({
@@ -490,7 +500,7 @@ const newExam = ref({
   waktuPemeriksaan: '',
   jenisPemeriksaan: '',
   keluhan: '',
-  diagnosis: '',
+  diagnosis_id: null,
   tindakan: '',
   obatList: [
     { nama: '', dosis: '', jumlah: 1 }
@@ -499,94 +509,56 @@ const newExam = ref({
   status: 'Menunggu'
 })
 
-// Sample examination data
-const examData = ref([
-  {
-    id: 1,
-    pasien: {
-      nama: 'Budi Santoso',
-      nip: '198501012010011001',
-      unitKerja: 'Bidang PKP2A'
-    },
-    tanggalPemeriksaan: '2024-08-08',
-    waktuPemeriksaan: '09:00',
-    jenisPemeriksaan: 'Pemeriksaan Rutin',
-    keluhan: 'Sakit kepala dan pusing sejak 3 hari',
-    diagnosis: 'Tension headache',
-    tindakan: 'Pemberian analgesik, istirahat cukup',
-    obat: 'Paracetamol 500mg 3x1',
-    status: 'Selesai',
-    dokter: 'Dr. Ahmad Wijaya'
-  },
-  {
-    id: 2,
-    pasien: {
-      nama: 'Sari Dewi',
-      nip: '198703152012012002',
-      unitKerja: 'Sekretariat'
-    },
-    tanggalPemeriksaan: '2024-08-08',
-    waktuPemeriksaan: '10:30',
-    jenisPemeriksaan: 'Medical Check Up',
-    keluhan: 'Medical check up rutin tahunan',
-    diagnosis: 'Sehat, tekanan darah normal',
-    tindakan: 'Pemeriksaan fisik lengkap, lab darah',
-    obat: '-',
-    status: 'Dalam Pemeriksaan',
-    dokter: 'Dr. Sarah Putri'
-  },
-  {
-    id: 3,
-    pasien: {
-      nama: 'Ahmad Fauzi',
-      nip: '198906082015011003',
-      unitKerja: 'Bidang SPKN'
-    },
-    tanggalPemeriksaan: '2024-08-08',
-    waktuPemeriksaan: '11:00',
-    jenisPemeriksaan: 'Konsultasi',
-    keluhan: 'Kontrol hipertensi rutin',
-    diagnosis: 'Hipertensi terkontrol',
-    tindakan: 'Kontrol tekanan darah, edukasi diet',
-    obat: 'Amlodipine 5mg 1x1',
-    status: 'Menunggu',
-    dokter: 'Dr. Ahmad Wijaya'
-  },
-  {
-    id: 4,
-    pasien: {
-      nama: 'Indira Putri',
-      nip: '199002201018012004',
-      unitKerja: 'Pusat Inovasi'
-    },
-    tanggalPemeriksaan: '2024-08-07',
-    waktuPemeriksaan: '14:00',
-    jenisPemeriksaan: 'Pemeriksaan Khusus',
-    keluhan: 'Mata minus, sering pusing saat bekerja di komputer',
-    diagnosis: 'Myopia, computer vision syndrome',
-    tindakan: 'Pemeriksaan mata, saran kacamata',
-    obat: 'Eye drops lubricant',
-    status: 'Selesai',
-    dokter: 'Dr. Lisa Andriani'
-  },
-  {
-    id: 5,
-    pasien: {
-      nama: 'Rizki Pratama',
-      nip: '199105101019011005',
-      unitKerja: 'PSDM'
-    },
-    tanggalPemeriksaan: '2024-08-07',
-    waktuPemeriksaan: '15:30',
-    jenisPemeriksaan: 'Pemeriksaan Rutin',
-    keluhan: 'Nyeri lambung, mual setelah makan',
-    diagnosis: 'Gastritis akut',
-    tindakan: 'Pemberian obat, diet, edukasi pola makan',
-    obat: 'Omeprazole 20mg 1x1, Antasida 3x1',
-    status: 'Selesai',
-    dokter: 'Dr. Ahmad Wijaya'
+const diagnosisInput = ref('')
+const onDiagnosisChange = () => {
+  const found = diagnosaList.value.find(d => d.nama_diagnosa === diagnosisInput.value)
+  newExam.value.diagnosis_id = found ? found.id : null
+}
+// Sinkronisasi input jika diagnosis_id berubah (misal reset form)
+watch(() => newExam.value.diagnosis_id, (id) => {
+  const found = diagnosaList.value.find(d => d.id === id)
+  diagnosisInput.value = found ? found.nama_diagnosa : ''
+})
+
+// Data pemeriksaan dari API
+const examData = ref([])
+
+// Data pegawai dan obat dari API
+const pegawaiList = ref([])
+const diagnosaList = ref([])
+const masterObatList = ref([])
+
+onMounted(async () => {
+  // Fetch data pemeriksaan dari API
+  try {
+    const resPemeriksaan = await $fetch('/api/pemeriksaan')
+    if (resPemeriksaan.success) {
+      examData.value = resPemeriksaan.data
+    }
+  } catch (e) {
+    console.error('Gagal fetch data pemeriksaan', e)
   }
-])
+  try {
+    const res = await $fetch('/api/pegawai')
+    pegawaiList.value = Array.isArray(res) ? res : []
+  } catch (e) {
+    console.error('Gagal fetch data pegawai', e)
+  }
+
+  try {
+    const resDiagnosa = await $fetch('/api/diagnosa')
+    diagnosaList.value = resDiagnosa.success ? resDiagnosa.data : []
+  } catch (e) {
+    console.error('Gagal fetch data diagnosa', e)
+  }
+
+  try {
+    const resObat = await $fetch('/api/master_obat')
+    masterObatList.value = resObat.success ? resObat.data : []
+  } catch (e) {
+    console.error('Gagal fetch data obat', e)
+  }
+})
 
 // Computed properties
 const filteredExams = computed(() => {
@@ -636,12 +608,16 @@ const totalPatients = computed(() => {
 })
 
 // Methods
-const formatDateTime = (dateString) => {
-  return new Date(dateString).toLocaleDateString('id-ID', {
+const formatDateTime = (tanggal, waktu) => {
+  if (!tanggal) return '';
+  const iso = waktu ? `${tanggal}T${waktu}` : tanggal;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('id-ID', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
-  })
+  });
 }
 
 const getStatusColor = (status) => {
@@ -715,37 +691,107 @@ const removeObat = (index) => {
   }
 }
 
-const saveNewExam = () => {
-  // Generate obat string from obatList
-  const obatString = newExam.value.obatList
-    .filter(obat => obat.nama)
-    .map(obat => `${obat.nama} ${obat.dosis} (${obat.jumlah} box)`)
-    .join(', ')
+// Helper untuk cek stok obat
+const getStokObat = (namaObat) => {
+  const found = masterObatList.value.find(o => o.nama_obat === namaObat)
+  return found ? found.stok_akhir : 0
+}
 
-  // Create new examination record
-  const newExamRecord = {
-    id: Date.now(), // Simple ID generation
-    pasien: { ...newExam.value.pasien },
-    tanggalPemeriksaan: newExam.value.tanggalPemeriksaan,
-    waktuPemeriksaan: newExam.value.waktuPemeriksaan,
-    jenisPemeriksaan: newExam.value.jenisPemeriksaan,
-    keluhan: newExam.value.keluhan,
-    diagnosis: newExam.value.diagnosis,
-    tindakan: newExam.value.tindakan,
-    obat: obatString || '-',
-    status: newExam.value.status,
-    dokter: newExam.value.dokter
+const saveNewExam = async () => {
+  // Cek jika ada obat yang stoknya 0
+  const adaStokHabis = newExam.value.obatList.some(obat => obat.nama && getStokObat(obat.nama) === 0)
+  if (adaStokHabis) {
+    alert('Ada obat yang stoknya habis, silakan ganti atau hapus dari daftar!')
+    return
   }
 
-  // Add to examination data
-  examData.value.unshift(newExamRecord)
-  
-  // Close modal and reset form
-  closeNewExamModal()
-  
-  // Show success message (you can implement toast/notification here)
-  alert('Pemeriksaan baru berhasil ditambahkan!')
+
+  if (!newExam.value.diagnosis_id) {
+    alert('Diagnosis wajib dipilih dari daftar!');
+    return;
+  }
+
+  // Siapkan payload untuk API
+  const payload = {
+    pasien_nip: newExam.value.pasien.nip,
+    tanggal_pemeriksaan: newExam.value.tanggalPemeriksaan,
+    waktu_pemeriksaan: newExam.value.waktuPemeriksaan,
+    jenis_pemeriksaan: newExam.value.jenisPemeriksaan,
+    keluhan: newExam.value.keluhan,
+    diagnosis_id: newExam.value.diagnosis_id,
+    tindakan: newExam.value.tindakan,
+    dokter: newExam.value.dokter,
+    status: newExam.value.status,
+    obatList: newExam.value.obatList.map(obat => {
+      const selected = masterObatList.value.find(o => o.nama_obat === obat.nama)
+      return {
+        obat_id: selected ? selected.id : null,
+        nama_obat: obat.nama,
+        dosis: obat.dosis,
+        jumlah: Number(obat.jumlah),
+        stok_saat_itu: selected ? selected.stok_akhir : null
+      }
+    })
+  }
+
+  try {
+    const res = await $fetch('/api/pemeriksaan', {
+      method: 'POST',
+      body: payload
+    })
+    if (res.success) {
+      // Proses pengurangan stok obat
+      for (const obat of newExam.value.obatList) {
+        const selected = masterObatList.value.find(o => o.nama_obat === obat.nama)
+        if (selected && selected.stok_akhir > 0) {
+          await $fetch('/api/stok_obat/keluar', {
+            method: 'POST',
+            body: {
+              obat_id: selected.id,
+              stok_awal: selected.stok_akhir,
+              stok_keluar: Number(obat.jumlah),
+            }
+          })
+        }
+      }
+      closeNewExamModal()
+      alert('Pemeriksaan baru berhasil ditambahkan!')
+      // Refresh data dari API
+      try {
+        const getRes = await $fetch('/api/pemeriksaan')
+        if (getRes.success) {
+          examData.value = getRes.data
+        }
+      } catch (e) {}
+    } else {
+      alert(res.message || 'Gagal menyimpan data pemeriksaan')
+    }
+  } catch (e) {
+    alert('Terjadi error saat menyimpan data pemeriksaan')
+  }
 }
+
+// Watchers & feedback
+watch(
+  () => newExam.value.pasien.nama,
+  (nama) => {
+    const found = pegawaiList.value.find(p => p.nama === nama)
+    if (found) {
+      newExam.value.pasien.nip = found.nip
+      newExam.value.pasien.unitKerja = found.nama_unit_kerja
+    } else {
+      newExam.value.pasien.nip = ''
+      newExam.value.pasien.unitKerja = ''
+    }
+  }
+)
+
+// Debug: log pegawaiList saat modal dibuka
+watch(showNewExamModal, (val) => {
+  if (val) {
+    console.log('pegawaiList:', pegawaiList.value)
+  }
+})
 
 // SEO
 useSeoMeta({
