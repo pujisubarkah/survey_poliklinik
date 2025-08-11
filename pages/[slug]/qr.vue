@@ -15,7 +15,7 @@ definePageMeta({
 })
 
 const canvasRef = ref(null)
-const surveyURL = 'https://surveypoliklinik.netlify.app' // Ganti dengan domain real-mu
+const surveyURL = 'https://surveypoliklinik.netlify.app/survey' // Ganti dengan domain real-mu
 
 onMounted(() => {
   if (canvasRef.value) {

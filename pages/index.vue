@@ -82,30 +82,7 @@
               </span>
             </div>
 
-            <!-- Captcha Field (Hidden by default, shown when needed) -->
-            <div v-if="showCaptcha" class="relative mb-4">
-              <div class="flex items-center space-x-2">
-                <input
-                  v-model="loginForm.captcha"
-                  type="text"
-                  name="CAPTCHA"
-                  placeholder="[Kode Captcha]"
-                  class="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <img 
-                  :src="captchaUrl" 
-                  alt="Captcha" 
-                  class="w-32 h-12 border rounded"
-                />
-                <button
-                  type="button"
-                  @click="refreshCaptcha"
-                  class="p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                >
-                  <i class="fas fa-refresh"></i>
-                </button>
-              </div>
-            </div>
+            <!-- Captcha removed -->
 
             <!-- Login Button -->
             <button
@@ -150,7 +127,7 @@ definePageMeta({
 const loginForm = reactive({
   username: '',
   password: '',
-  captcha: ''
+  // captcha removed
 })
 
 const errors = reactive({
@@ -159,8 +136,7 @@ const errors = reactive({
 })
 
 const isLoading = ref(false)
-const showCaptcha = ref(false)
-const captchaUrl = ref('https://simgos.kemkes.go.id/webservice/authentication/captcha')
+// captcha logic removed
 const lockMessage = ref('')
 
 // Methods
@@ -214,17 +190,14 @@ const handleLogin = async () => {
   alert('Login berhasil!')
   await navigateTo(`/${slug}/dashboard`)
   } catch (error) {
-    showCaptcha.value = true
+  // showCaptcha removed
     alert(error.message)
   } finally {
     isLoading.value = false
   }
 }
 
-const refreshCaptcha = () => {
-  // Refresh captcha by adding timestamp
-  captchaUrl.value = `https://simgos.kemkes.go.id/webservice/authentication/captcha?t=${Date.now()}`
-}
+// refreshCaptcha removed
 
 // SEO
 useSeoMeta({

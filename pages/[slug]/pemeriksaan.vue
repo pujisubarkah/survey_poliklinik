@@ -432,10 +432,8 @@
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Pilih Dokter</option>
-                <option value="Dr. Ahmad Wijaya">Dr. Ahmad Wijaya</option>
-                <option value="Dr. Sarah Putri">Dr. Sarah Putri</option>
-                <option value="Dr. Budi Santoso">Dr. Budi Santoso</option>
-                <option value="Dr. Maya Sari">Dr. Maya Sari</option>
+                  <option value="dr. Rindra Eriska Hidayat, M.K.M">dr. Rindra Eriska Hidayat, M.K.M</option>
+                  <option value="dr. Yuriko Francisca">dr. Yuriko Francisca</option>
               </select>
             </div>
             <div>
