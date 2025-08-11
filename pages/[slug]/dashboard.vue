@@ -130,7 +130,14 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-// Greeting by time
+import { useUserStore } from '~/stores/user'
+import { storeToRefs } from 'pinia'
+import * as echarts from 'echarts'
+
+const userStore = useUserStore()
+userStore.hydrate()
+const { user } = storeToRefs(userStore)
+
 const greeting = computed(() => {
   const hour = new Date().getHours()
   if (hour < 11) return 'Selamat Pagi'
@@ -138,18 +145,11 @@ const greeting = computed(() => {
   if (hour < 18) return 'Selamat Sore'
   return 'Selamat Malam'
 })
-import { useRoute } from 'vue-router'
-import * as echarts from 'echarts'
-// Ambil nama dari slug route dan format agar lebih rapi
-const route = useRoute()
+
 const displayName = computed(() => {
-  const slug = route.params.slug || ''
-  // Ubah slug ke format nama (rindra-hidayat => Rindra Hidayat)
-  return slug
-    .toString()
-    .split('-')
-    .map(s => s.charAt(0).toUpperCase() + s.slice(1))
-    .join(' ')
+  if (user.value && user.value.nama) return user.value.nama
+  if (user.value && user.value.username) return user.value.username
+  return ''
 })
 
 // Set layout

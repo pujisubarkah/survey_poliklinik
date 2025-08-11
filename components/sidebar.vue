@@ -1,6 +1,15 @@
 <!-- components/sidebar.vue -->
 <template>
   <div class="sidebar-container">
+    <!-- Sidebar Toggle Button (Hamburger) -->
+    <button
+      class="fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-lg lg:hidden"
+      @click="isOpen = true"
+      v-if="!isOpen"
+      aria-label="Buka Sidebar"
+    >
+      <i class="fas fa-bars text-xl text-blue-700"></i>
+    </button>
     <!-- Sidebar Overlay for mobile -->
     <div 
       v-if="isOpen" 
@@ -155,59 +164,57 @@
               <i class="fas fa-user-md text-white text-sm"></i>
             </div>
             <div class="text-sm">
-              <p class="font-medium text-gray-800">Admin</p>
-              <p class="text-gray-600">Administrator</p>
+              <p class="font-medium text-gray-800">
+                {{ userStore.user && userStore.user.nama ? userStore.user.nama : 'Admin' }}
+              </p>
+              <p class="text-gray-600">
+                {{ userStore.user && userStore.user.role ? userStore.user.role : 'Administrator' }}
+              </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <button 
-            @click="logout"
-            class="p-2 rounded-md hover:bg-gray-100 text-gray-600 transition-colors"
-            title="Logout"
-          >
-            <i class="fas fa-sign-out-alt"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
+          </template>
+          <script setup>
+          import { ref, computed } from 'vue'
 
-<script setup>
-import { ref } from 'vue'
+          // Props
+          const props = defineProps({
+            modelValue: {
+              type: Boolean,
+              default: false
+            }
+          })
 
-// Props
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false
-  }
-})
+          // Emits
+          const emit = defineEmits(['update:modelValue'])
 
-// Emits
-const emit = defineEmits(['update:modelValue'])
+          // Computed
+          const isOpen = computed({
+            get() {
+              return props.modelValue
+            },
+            set(value) {
+              emit('update:modelValue', value)
+            }
+          })
 
-// Computed
-const isOpen = computed({
-  get() {
-    return props.modelValue
-  },
-  set(value) {
-    emit('update:modelValue', value)
-  }
-})
+          // Methods
+          const closeSidebar = () => {
+            isOpen.value = false
+          }
 
-// Methods
-const closeSidebar = () => {
-  isOpen.value = false
-}
+          import { useUserStore } from '~/stores/user'
+          const userStore = useUserStore()
 
-const logout = async () => {
-  if (confirm('Apakah Anda yakin ingin logout?')) {
-    // Here you would typically clear authentication tokens
-    // and redirect to login page
-    await navigateTo('/login')
-  }
-}
+          const logout = async () => {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+              userStore.logout()
+              await navigateTo('/login')
+            }
+          }
 </script>
 
 <style scoped>

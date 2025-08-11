@@ -29,10 +29,10 @@
             <img src="/lanri_.png" alt="Logo LAN RI" class="h-[70px] mb-4 self-start drop-shadow-lg" />
             <div class="mt-4 w-full">
               <div class="text-xl font-bold mb-2 leading-normal" style="white-space:normal;">KLINIK LAN</div>
-              <div class="mb-2"><i class="fas fa-street-view mr-2"></i>Jl. Veteran No. 10 Jakarta Pusat</div>
-              <div class="mb-2"><i class="fas fa-phone mr-2"></i>1111 / <i class="fas fa-fax mr-1"></i>111</div>
-              <div class="mb-2"><i class="fas fa-envelope mr-2"></i>cs@rs-simpel.com</div>
-              <div class="mb-2"><i class="fas fa-globe mr-2"></i>simgos.kemkes.go.id</div>
+              <div class="mb-2"><i class="fas fa-street-view mr-2"></i>Jl. Veteran No. 10 Jakarta Pusat, 10110</div>
+              <div class="mb-2"><i class="fas fa-phone mr-2"></i>021-3847517 / <i class="fas fa-fax mr-1"></i>021-3847517</div>
+              <div class="mb-2"><i class="fas fa-envelope mr-2"></i>cs@klinik.lan.go.id</div>
+              <div class="mb-2"><i class="fas fa-globe mr-2"></i>klinik.lan.go.id</div>
             </div>
           </div>
         </div>
