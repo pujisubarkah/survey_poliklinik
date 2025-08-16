@@ -201,7 +201,7 @@ const handleLogin = async () => {
 
   showLoginSuccess.value = true
   setTimeout(async () => {
-    await navigateTo(`/${slug}/dashboard`)
+    await navigateTo(`/${slug}/survey-results`)
   }, 1000)
   } catch (error) {
   // showCaptcha removed

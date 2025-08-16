@@ -62,17 +62,7 @@
           </li>
           <!-- Divider -->
           <li class="border-t border-gray-200 my-4"></li>
-          <!-- Dashboard -->
-          <li>
-            <NuxtLink 
-              to="/admin/dashboard" 
-              class="nav-link"
-              :class="{ 'active': $route.path === '/admin/dashboard' }"
-            >
-              <i class="fas fa-tachometer-alt nav-icon"></i>
-              <span>Dashboard</span>
-            </NuxtLink>
-          </li>
+         
 
           <!-- Survey Results -->
           <li>

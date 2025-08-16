@@ -1,6 +1,12 @@
-<!-- pages/admin/survey-results.vue -->
 <template>
   <div>
+    <!-- Welcome Section -->
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ greeting }}, {{ displayName }}!</h2>
+      <p class="text-blue-700 font-semibold mb-1">Sehat Selalu yah! Jangan sakit, nanti yang jaga klinik siapa kalau sakit 😊</p>
+      <p class="text-gray-600">Ini adalah Ringkasan dan Statistik Klinik Kita. Ringkasan dan statistik sistem klinik LAN</p>
+    </div>
+
     <!-- Header Section -->
     <div class="mb-8">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -236,6 +242,8 @@
 import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import * as XLSX from 'xlsx'
+import { useUserStore } from '~/stores/user'
+import { storeToRefs } from 'pinia'
 
 // Set layout
 definePageMeta({
@@ -255,6 +263,23 @@ const filterGender = ref('')
 const filterPasien = ref('')
 const filterUsiaMin = ref('')
 const filterUsiaMax = ref('')
+const userStore = useUserStore()
+userStore.hydrate?.() // panggil hydrate jika ada
+const { user } = storeToRefs(userStore)
+
+const greeting = computed(() => {
+  const hour = new Date().getHours()
+  if (hour < 11) return 'Selamat Pagi'
+  if (hour < 15) return 'Selamat Siang'
+  if (hour < 18) return 'Selamat Sore'
+  return 'Selamat Malam'
+})
+
+const displayName = computed(() => {
+  if (user.value && user.value.nama) return user.value.nama
+  if (user.value && user.value.username) return user.value.username
+  return ''
+})
 
 // Chart refs
 const mekanismePie = ref(null)
