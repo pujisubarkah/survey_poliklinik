@@ -18,7 +18,10 @@ export default defineEventHandler(async (event) => {
 				})
 				.from(responden)
 				.leftJoin(jawaban_survei, eq(jawaban_survei.responden_id, responden.id));
-			return { success: true, data };
+			
+			const totalResponden = data.length;
+
+			return { success: true, totalResponden, data };
 		} catch (e) {
 			const errorMessage = e instanceof Error ? e.message : String(e);
 			return { success: false, message: 'Gagal mengambil data', error: errorMessage };

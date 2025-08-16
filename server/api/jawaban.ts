@@ -28,11 +28,12 @@ export default defineEventHandler(async (event) => {
 
             // Jawaban sebagai object dari key q1-q5
             const jawabanObj = {
-                q1: body.q1,
-                q2: body.q2,
-                q3: body.q3,
-                q4: body.q4,
-                q5: body.q5,
+                'mekanisme atau prosedur untuk mendapatkan layanan di Klinik LAN?': body.q1,
+                'kemampuan petugas dalam memberikan pelayanan?': body.q2,
+                'kualitas sarana dan prasarana di Klinik LAN?': body.q3,
+                'mendapatkan obat yang dibutuhkan sesuai sakitnya?': body.q4,
+                'pelayanan Klinik LAN sudah sesuai harapan?': body.q5,
+                'Saran': body.saran || ''
             };
 
             await db.insert(jawaban_survei).values({

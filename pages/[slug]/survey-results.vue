@@ -98,12 +98,6 @@
       </div>
     </div>
 
-    <!-- Trend Chart -->
-    <div class="bg-white rounded-lg shadow p-6 mb-8">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">Trend Kepuasan Mingguan</h3>
-      <div id="trendChart" class="w-full h-80"></div>
-    </div>
-
     <!-- Detailed Table -->
     <div class="bg-white rounded-lg shadow">
       <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -128,74 +122,53 @@
         </div>
       </div>
 
+      <!-- Filter Section -->
+      <div class="flex flex-wrap gap-4 mb-4">
+        <select v-model="filterGender" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+          <option value="">Semua Gender</option>
+          <option value="Pria">Pria</option>
+          <option value="Wanita">Wanita</option>
+        </select>
+        <select v-model="filterPasien" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+          <option value="">Semua Jenis Pasien</option>
+          <option value="Pegawai">Pegawai</option>
+          <option value="PPNPN">PPNPN</option>
+          <option value="Peserta Pelatihan">Peserta Pelatihan</option>
+          <option value="Tamu">Tamu</option>
+        </select>
+        <input v-model.number="filterUsiaMin" type="number" min="1" max="120" placeholder="Usia Min" class="border border-gray-300 rounded-md px-3 py-2 text-sm w-24">
+        <input v-model.number="filterUsiaMax" type="number" min="1" max="120" placeholder="Usia Max" class="border border-gray-300 rounded-md px-3 py-2 text-sm w-24">
+      </div>
+
       <!-- Table -->
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                No
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tanggal
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Keramahan Petugas
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Kebersihan Tempat
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Kecepatan Pelayanan
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Rata-rata
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
+              <th>No</th>
+              <th>Tanggal</th>
+              <th>Mekanisme/Prosedur</th>
+              <th>Kemampuan Petugas</th>
+              <th>Sarana & Prasarana</th>
+              <th>Obat Sesuai</th>
+              <th>Sesuai Harapan</th>
+              <th>Saran/Kritik</th>
+              <th>Rata-rata</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="(item, index) in paginatedData" :key="item.id" class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ (currentPage - 1) * itemsPerPage + index + 1 }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ formatDate(item.created_at) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div class="flex items-center">
-                  <span class="text-lg mr-2">{{ getEmoji(item.keramahan) }}</span>
-                  {{ getLabel(item.keramahan) }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div class="flex items-center">
-                  <span class="text-lg mr-2">{{ getEmoji(item.kebersihan) }}</span>
-                  {{ getLabel(item.kebersihan) }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div class="flex items-center">
-                  <span class="text-lg mr-2">{{ getEmoji(item.kecepatan) }}</span>
-                  {{ getLabel(item.kecepatan) }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <span 
-                  class="px-2 py-1 rounded-full text-xs font-semibold"
-                  :class="getScoreColor(item.average)"
-                >
+            <tr v-for="(item, index) in paginatedData" :key="item.id">
+              <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+              <td>{{ formatDate(item.tanggal_submit) }}</td>
+              <td>{{ item.mekanisme ? getLabel(item.mekanisme) : '-' }}</td>
+              <td>{{ item.petugas ? getLabel(item.petugas) : '-' }}</td>
+              <td>{{ item.sarana ? getLabel(item.sarana) : '-' }}</td>
+              <td>{{ item.obat }}</td>
+              <td>{{ item.harapan ? getLabel(item.harapan) : '-' }}</td>
+              <td>{{ item.saran }}</td>
+              <td>
+                <span :class="getScoreColor(item.average)">
                   {{ item.average.toFixed(1) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span 
-                  class="px-2 py-1 rounded-full text-xs font-semibold"
-                  :class="getSatisfactionBadge(item.average)"
-                >
-                  {{ getSatisfactionText(item.average) }}
                 </span>
               </td>
             </tr>
@@ -231,12 +204,33 @@
         </div>
       </div>
     </div>
+
+    <!-- Gender and Patient Type Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-2">Statistik Gender</h3>
+        <p>Pria: {{ filteredData.filter(i => i.gender === 'Pria').length }}</p>
+        <p>Wanita: {{ filteredData.filter(i => i.gender === 'Wanita').length }}</p>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-2">Statistik Jenis Pasien</h3>
+        <p>Pegawai: {{ filteredData.filter(i => i.pasien === 'Pegawai').length }}</p>
+        <p>PPNPN: {{ filteredData.filter(i => i.pasien === 'PPNPN').length }}</p>
+        <p>Peserta Pelatihan: {{ filteredData.filter(i => i.pasien === 'Peserta Pelatihan').length }}</p>
+        <p>Tamu: {{ filteredData.filter(i => i.pasien === 'Tamu').length }}</p>
+      </div>
+    </div>
+
+    <!-- Loading and Error Messages -->
+    <div v-if="isLoading" class="text-center py-8 text-gray-500">Memuat data survey...</div>
+    <div v-if="fetchError" class="text-center py-8 text-red-500">{{ fetchError }}</div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import * as XLSX from 'xlsx'
 
 // Set layout
 definePageMeta({
@@ -248,129 +242,89 @@ const selectedPeriod = ref('all')
 const searchQuery = ref('')
 const itemsPerPage = ref(10)
 const currentPage = ref(1)
+const surveyData = ref([])
+const totalResponden = ref(0)
+const isLoading = ref(true)
+const fetchError = ref('')
+const filterGender = ref('')
+const filterPasien = ref('')
+const filterUsiaMin = ref('')
+const filterUsiaMax = ref('')
 
-// Mock data - dalam aplikasi nyata ini akan dari API
-const surveyData = ref([
-  {
-    id: 1,
-    created_at: '2024-01-15T10:30:00Z',
-    keramahan: 5,
-    kebersihan: 4,
-    kecepatan: 4,
-    average: 4.3
-  },
-  {
-    id: 2,
-    created_at: '2024-01-15T11:15:00Z',
-    keramahan: 4,
-    kebersihan: 5,
-    kecepatan: 3,
-    average: 4.0
-  },
-  {
-    id: 3,
-    created_at: '2024-01-15T14:20:00Z',
-    keramahan: 5,
-    kebersihan: 5,
-    kecepatan: 5,
-    average: 5.0
-  },
-  {
-    id: 4,
-    created_at: '2024-01-14T09:45:00Z',
-    keramahan: 3,
-    kebersihan: 4,
-    kecepatan: 3,
-    average: 3.3
-  },
-  {
-    id: 5,
-    created_at: '2024-01-14T16:30:00Z',
-    keramahan: 4,
-    kebersihan: 4,
-    kecepatan: 4,
-    average: 4.0
-  },
-  {
-    id: 6,
-    created_at: '2024-01-13T13:10:00Z',
-    keramahan: 5,
-    kebersihan: 3,
-    kecepatan: 4,
-    average: 4.0
-  },
-  {
-    id: 7,
-    created_at: '2024-01-13T15:45:00Z',
-    keramahan: 2,
-    kebersihan: 3,
-    kecepatan: 2,
-    average: 2.3
-  },
-  {
-    id: 8,
-    created_at: '2024-01-12T08:20:00Z',
-    keramahan: 4,
-    kebersihan: 5,
-    kecepatan: 4,
-    average: 4.3
-  },
-  {
-    id: 9,
-    created_at: '2024-01-12T12:30:00Z',
-    keramahan: 5,
-    kebersihan: 4,
-    kecepatan: 5,
-    average: 4.7
-  },
-  {
-    id: 10,
-    created_at: '2024-01-11T17:15:00Z',
-    keramahan: 3,
-    kebersihan: 3,
-    kecepatan: 3,
-    average: 3.0
-  },
-])
-
-// Computed properties
-const summaryStats = computed(() => {
-  const total = surveyData.value.length
-  const avgScore = surveyData.value.reduce((sum, item) => sum + item.average, 0) / total
-  const satisfiedCount = surveyData.value.filter(item => item.average >= 4).length
-  const satisfactionLevel = (satisfiedCount / total) * 100
-  const today = new Date().toDateString()
-  const todayCount = surveyData.value.filter(item => 
-    new Date(item.created_at).toDateString() === today
-  ).length
-
-  return {
-    totalResponden: total,
-    averageScore: avgScore,
-    satisfactionLevel: Math.round(satisfactionLevel),
-    todaySurvey: todayCount
+// Fetch data from API
+async function fetchSurveyData() {
+  isLoading.value = true
+  fetchError.value = ''
+  try {
+    const res = await $fetch('/api/responden')
+    if (res && res.success) {
+      surveyData.value = res.data
+      totalResponden.value = res.totalResponden
+    } else {
+      fetchError.value = res?.message || 'Gagal mengambil data'
+    }
+  } catch (e) {
+    fetchError.value = e?.message || 'Gagal fetch data survey'
+  } finally {
+    isLoading.value = false
   }
+}
+
+onMounted(() => {
+  fetchSurveyData()
+  nextTick(() => setTimeout(initCharts, 200))
+})
+
+// Helper for mapping jawaban to score (Likert scale)
+const likertMap = {
+  'Sangat Sulit': 1, 'Sulit': 2, 'Cukup Mudah': 3, 'Mudah': 4, 'Sangat Mudah': 5,
+  'Sangat Tidak Kompeten': 1, 'Tidak Kompeten': 2, 'Cukup Kompeten': 3, 'Kompeten': 4, 'Sangat Kompeten': 5,
+  'Sangat Buruk': 1, 'Buruk': 2, 'Cukup Nyaman': 3, 'Nyaman': 4, 'Sangat Nyaman': 5,
+  'Sangat Tidak Sesuai': 1, 'Tidak Sesuai': 2, 'Cukup Sesuai': 3, 'Sesuai': 4, 'Sangat Sesuai': 5
+}
+
+// Transform API data for table and chart
+const transformedData = computed(() => {
+  return surveyData.value.map(item => {
+    const j = item.jawaban || {}
+    return {
+      id: item.id,
+      tanggal_submit: item.tanggal_submit,
+      gender: item.jenis_kelamin,      // Tambahkan ini
+      pasien: item.jenis_pasien,       // Tambahkan ini
+      usia: item.usia,                 // Tambahkan ini
+      mekanisme: likertMap[j['mekanisme atau prosedur untuk mendapatkan layanan di Klinik LAN?']] || 0,
+      petugas: likertMap[j['kemampuan petugas dalam memberikan pelayanan?']] || 0,
+      sarana: likertMap[j['kualitas sarana dan prasarana di Klinik LAN?']] || 0,
+      obat: j['mendapatkan obat yang dibutuhkan sesuai sakitnya?'] || '',
+      harapan: likertMap[j['pelayanan Klinik LAN sudah sesuai harapan?']] || 0,
+      saran: j['Saran'] || '',
+      average: (
+        (
+          (likertMap[j['mekanisme atau prosedur untuk mendapatkan layanan di Klinik LAN?']] || 0) +
+          (likertMap[j['kemampuan petugas dalam memberikan pelayanan?']] || 0) +
+          (likertMap[j['kualitas sarana dan prasarana di Klinik LAN?']] || 0) +
+          (likertMap[j['pelayanan Klinik LAN sudah sesuai harapan?']] || 0)
+        ) / 4
+      ) || 0
+    }
+  })
 })
 
 const filteredData = computed(() => {
-  let filtered = surveyData.value
-
-  // Filter by search query
+  let filtered = transformedData.value
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(item => 
-      formatDate(item.created_at).toLowerCase().includes(query) ||
-      getLabel(item.keramahan).toLowerCase().includes(query) ||
-      getLabel(item.kebersihan).toLowerCase().includes(query) ||
-      getLabel(item.kecepatan).toLowerCase().includes(query)
+    filtered = filtered.filter(item =>
+      item.saran.toLowerCase().includes(query) ||
+      item.obat.toLowerCase().includes(query)
     )
   }
-
   // Filter by period
   if (selectedPeriod.value !== 'all') {
     const now = new Date()
     filtered = filtered.filter(item => {
-      const itemDate = new Date(item.created_at)
+      const itemDate = new Date(item.tanggal_submit)
       switch (selectedPeriod.value) {
         case 'today':
           return itemDate.toDateString() === now.toDateString()
@@ -386,51 +340,79 @@ const filteredData = computed(() => {
       }
     })
   }
-
+  // Filter by gender
+  if (filterGender.value) {
+    filtered = filtered.filter(item => item.gender === filterGender.value)
+  }
+  // Filter by patient type
+  if (filterPasien.value) {
+    filtered = filtered.filter(item => item.pasien === filterPasien.value)
+  }
+  // Filter by age
+  if (filterUsiaMin.value) {
+    filtered = filtered.filter(item => item.usia >= filterUsiaMin.value)
+  }
+  if (filterUsiaMax.value) {
+    filtered = filtered.filter(item => item.usia <= filterUsiaMax.value)
+  }
   return filtered
 })
 
 const totalPages = computed(() => Math.ceil(filteredData.value.length / itemsPerPage.value))
-
 const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
   return filteredData.value.slice(start, end)
 })
 
-// Methods
-const getEmoji = (score) => {
+// Summary stats
+const summaryStats = computed(() => {
+  const total = filteredData.value.length
+  const avgScore = total
+    ? filteredData.value.reduce((sum, item) => sum + item.average, 0) / total
+    : 0
+  const satisfiedCount = filteredData.value.filter(item => item.average >= 4).length
+  const satisfactionLevel = total ? (satisfiedCount / total) * 100 : 0
+  const today = new Date().toDateString()
+  const todayCount = filteredData.value.filter(item =>
+    new Date(item.tanggal_submit).toDateString() === today
+  ).length
+  return {
+    totalResponden: totalResponden.value,
+    averageScore: avgScore,
+    satisfactionLevel: Math.round(satisfactionLevel),
+    todaySurvey: todayCount
+  }
+})
+
+// Table helpers
+const getEmoji = score => {
   const emojis = ['😠', '🙁', '😐', '🙂', '😄']
-  return emojis[score - 1] || '😐'
+  return score >= 1 && score <= 5 ? emojis[score - 1] : '❓'
 }
-
-const getLabel = (score) => {
+const getLabel = score => {
   const labels = ['Sangat Tidak Puas', 'Tidak Puas', 'Biasa Saja', 'Puas', 'Sangat Puas']
-  return labels[score - 1] || 'Tidak Ada Data'
+  return score >= 1 && score <= 5 ? labels[score - 1] : 'Tidak Ada Data'
 }
-
-const getScoreColor = (score) => {
+const getScoreColor = score => {
   if (score >= 4.5) return 'bg-green-100 text-green-800'
   if (score >= 3.5) return 'bg-yellow-100 text-yellow-800'
   if (score >= 2.5) return 'bg-orange-100 text-orange-800'
   return 'bg-red-100 text-red-800'
 }
-
-const getSatisfactionBadge = (score) => {
+const getSatisfactionBadge = score => {
   if (score >= 4.5) return 'bg-green-100 text-green-800'
   if (score >= 3.5) return 'bg-blue-100 text-blue-800'
   if (score >= 2.5) return 'bg-yellow-100 text-yellow-800'
   return 'bg-red-100 text-red-800'
 }
-
-const getSatisfactionText = (score) => {
+const getSatisfactionText = score => {
   if (score >= 4.5) return 'Sangat Puas'
   if (score >= 3.5) return 'Puas'
   if (score >= 2.5) return 'Cukup'
   return 'Kurang'
 }
-
-const formatDate = (dateString) => {
+const formatDate = dateString => {
   return new Date(dateString).toLocaleDateString('id-ID', {
     year: 'numeric',
     month: 'short',
@@ -439,174 +421,99 @@ const formatDate = (dateString) => {
     minute: '2-digit'
   })
 }
-
 const exportData = () => {
-  // Implementasi export ke Excel
-  alert('Fitur export sedang dalam pengembangan')
+  const exportRows = filteredData.value.map(item => ({
+    Tanggal: formatDate(item.tanggal_submit),
+    Gender: item.gender,
+    'Jenis Pasien': item.pasien,
+    Usia: item.usia,
+    'Mekanisme/Prosedur': item.mekanisme,
+    'Kemampuan Petugas': item.petugas,
+    'Sarana & Prasarana': item.sarana,
+    'Obat Sesuai': item.obat,
+    'Sesuai Harapan': item.harapan,
+    'Saran/Kritik': item.saran,
+    'Rata-rata': item.average.toFixed(1)
+  }))
+  const worksheet = XLSX.utils.json_to_sheet(exportRows)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Survey')
+  XLSX.writeFile(workbook, 'hasil-survey-poliklinik.xlsx')
 }
 
-// Chart initialization
+// Chart initialization (gunakan transformedData)
 const initCharts = () => {
   // Satisfaction Distribution Chart
   const satisfactionChart = echarts.init(document.getElementById('satisfactionDistribution'))
   const satisfactionCounts = [0, 0, 0, 0, 0]
-  surveyData.value.forEach(item => {
+  transformedData.value.forEach(item => {
     const avgRounded = Math.round(item.average)
     if (avgRounded >= 1 && avgRounded <= 5) {
       satisfactionCounts[avgRounded - 1]++
     }
   })
-
   satisfactionChart.setOption({
-    tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br/>{b}: {c} ({d}%)'
-    },
-    legend: {
-      orient: 'vertical',
-      left: 'left'
-    },
-    series: [
-      {
-        name: 'Tingkat Kepuasan',
-        type: 'pie',
-        radius: '60%',
-        data: [
-          { value: satisfactionCounts[0], name: 'Sangat Tidak Puas', itemStyle: { color: '#EF4444' } },
-          { value: satisfactionCounts[1], name: 'Tidak Puas', itemStyle: { color: '#F97316' } },
-          { value: satisfactionCounts[2], name: 'Biasa Saja', itemStyle: { color: '#EAB308' } },
-          { value: satisfactionCounts[3], name: 'Puas', itemStyle: { color: '#22C55E' } },
-          { value: satisfactionCounts[4], name: 'Sangat Puas', itemStyle: { color: '#15803D' } }
-        ],
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
+    tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)' },
+    legend: { orient: 'vertical', left: 'left' },
+    series: [{
+      name: 'Tingkat Kepuasan',
+      type: 'pie',
+      radius: '60%',
+      data: [
+        { value: satisfactionCounts[0], name: 'Sangat Tidak Puas', itemStyle: { color: '#EF4444' } },
+        { value: satisfactionCounts[1], name: 'Tidak Puas', itemStyle: { color: '#F97316' } },
+        { value: satisfactionCounts[2], name: 'Biasa Saja', itemStyle: { color: '#EAB308' } },
+        { value: satisfactionCounts[3], name: 'Puas', itemStyle: { color: '#22C55E' } },
+        { value: satisfactionCounts[4], name: 'Sangat Puas', itemStyle: { color: '#15803D' } }
+      ],
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.5)'
         }
       }
-    ]
+    }]
   })
 
   // Questions Average Chart
   const questionsChart = echarts.init(document.getElementById('questionsAverage'))
-  const keramahanAvg = surveyData.value.reduce((sum, item) => sum + item.keramahan, 0) / surveyData.value.length
-  const kebersihanAvg = surveyData.value.reduce((sum, item) => sum + item.kebersihan, 0) / surveyData.value.length
-  const kecepatanAvg = surveyData.value.reduce((sum, item) => sum + item.kecepatan, 0) / surveyData.value.length
+  const mekanismeAvg = transformedData.value.reduce((sum, item) => sum + item.mekanisme, 0) / (transformedData.value.length || 1)
+  const petugasAvg = transformedData.value.reduce((sum, item) => sum + item.petugas, 0) / (transformedData.value.length || 1)
+  const saranaAvg = transformedData.value.reduce((sum, item) => sum + item.sarana, 0) / (transformedData.value.length || 1)
+  const harapanAvg = transformedData.value.reduce((sum, item) => sum + item.harapan, 0) / (transformedData.value.length || 1)
 
   questionsChart.setOption({
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow'
-      }
-    },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
     xAxis: {
       type: 'category',
-      data: ['Keramahan\nPetugas', 'Kebersihan\nTempat', 'Kecepatan\nPelayanan']
+      data: [
+        'Mekanisme/Prosedur',
+        'Kemampuan Petugas',
+        'Sarana & Prasarana',
+        'Sesuai Harapan'
+      ]
     },
-    yAxis: {
-      type: 'value',
-      min: 0,
-      max: 5,
-      axisLabel: {
-        formatter: '{value}'
-      }
-    },
-    series: [
-      {
-        name: 'Rata-rata Score',
-        type: 'bar',
-        data: [
-          { value: keramahanAvg.toFixed(1), itemStyle: { color: '#3B82F6' } },
-          { value: kebersihanAvg.toFixed(1), itemStyle: { color: '#10B981' } },
-          { value: kecepatanAvg.toFixed(1), itemStyle: { color: '#8B5CF6' } }
-        ],
-        barWidth: '60%'
-      }
-    ]
+    yAxis: { type: 'value', min: 0, max: 5, axisLabel: { formatter: '{value}' } },
+    series: [{
+      name: 'Rata-rata Score',
+      type: 'bar',
+      data: [
+        { value: mekanismeAvg.toFixed(1), itemStyle: { color: '#3B82F6' } },
+        { value: petugasAvg.toFixed(1), itemStyle: { color: '#10B981' } },
+        { value: saranaAvg.toFixed(1), itemStyle: { color: '#8B5CF6' } },
+        { value: harapanAvg.toFixed(1), itemStyle: { color: '#F59E42' } }
+      ],
+      barWidth: '60%'
+    }]
   })
 
-  // Trend Chart
-  const trendChart = echarts.init(document.getElementById('trendChart'))
-  // Generate trend data (simplified)
-  const trendData = []
-  const trendLabels = []
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date()
-    date.setDate(date.getDate() - i)
-    trendLabels.push(date.toLocaleDateString('id-ID', { month: 'short', day: 'numeric' }))
-    
-    // Mock trend data based on existing survey data
-    const dayData = surveyData.value.filter(item => {
-      const itemDate = new Date(item.created_at)
-      return itemDate.toDateString() === date.toDateString()
-    })
-    
-    const avgScore = dayData.length > 0 
-      ? dayData.reduce((sum, item) => sum + item.average, 0) / dayData.length
-      : Math.random() * 2 + 3 // Random data between 3-5 for demo
-    
-    trendData.push(avgScore.toFixed(1))
-  }
-
-  trendChart.setOption({
-    tooltip: {
-      trigger: 'axis'
-    },
-    xAxis: {
-      type: 'category',
-      data: trendLabels
-    },
-    yAxis: {
-      type: 'value',
-      min: 0,
-      max: 5
-    },
-    series: [
-      {
-        name: 'Rata-rata Kepuasan',
-        type: 'line',
-        data: trendData,
-        smooth: true,
-        itemStyle: {
-          color: '#6366F1'
-        },
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [{
-              offset: 0, color: 'rgba(99, 102, 241, 0.3)'
-            }, {
-              offset: 1, color: 'rgba(99, 102, 241, 0.05)'
-            }]
-          }
-        }
-      }
-    ]
-  })
-
-  // Make charts responsive
   window.addEventListener('resize', () => {
     satisfactionChart.resize()
     questionsChart.resize()
-    trendChart.resize()
   })
 }
 
-// Lifecycle hooks
-onMounted(() => {
-  nextTick(() => {
-    setTimeout(initCharts, 100)
-  })
-})
-
-// SEO
 useSeoMeta({
   title: 'Hasil Survey - Admin Poliklinik LAN',
   description: 'Data hasil survey kepuasan pelayanan Poliklinik LAN'
@@ -616,8 +523,7 @@ useSeoMeta({
 <style scoped>
 /* Chart containers */
 #satisfactionDistribution,
-#questionsAverage,
-#trendChart {
+#questionsAverage {
   min-height: 320px;
 }
 
