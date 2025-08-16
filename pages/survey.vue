@@ -71,10 +71,19 @@
               <span class="text-xs sm:text-sm font-medium mt-1 text-center">{{ opt.label }}</span>
             </button>
           </div>
-          <!-- Open -->
-          <div v-else-if="q.type === 'open'" class="mt-2">
-            <textarea v-model="answers[qIdx]" @input="setOpen(qIdx, $event.target.value)" rows="3" class="form-textarea w-full" placeholder="Tulis saran atau kritik Anda di sini..."></textarea>
-          </div>
+        </div>
+
+        <!-- Saran & Kritik -->
+        <div class="mb-8">
+          <label class="block mb-2 text-sm sm:text-lg font-semibold break-words">
+            Tuliskan Saran maupun Kritik Anda terhadap layanan yang Anda terima di Klinik LAN
+          </label>
+          <textarea
+            v-model="openAnswer"
+            rows="3"
+            class="form-textarea w-full"
+            placeholder="Tulis saran atau kritik Anda di sini..."
+          ></textarea>
         </div>
 
         <button type="submit" class="btn btn-primary btn-md sm:btn-lg w-full mt-4 sm:mt-6">
@@ -93,7 +102,6 @@
 <script setup>
 import { ref } from 'vue'
 
-// Likert options for each question
 const likertOptions = [
   [ // Q1: Mekanisme/prosedur
     { label: 'Sangat Sulit', emoji: '😠' },
@@ -157,12 +165,7 @@ const questions = [
 ]
 
 const answers = ref([
-  '', // Q1
-  '', // Q2
-  '', // Q3
-  '', // Q4
-  '', // Q5
-  ''  // Q6
+  '', '', '', '', '', ''
 ])
 const submitted = ref(false)
 const identitas = ref({
@@ -171,28 +174,75 @@ const identitas = ref({
   usia: ''
 })
 
+const q1 = ref('')
+const q2 = ref('')
+const q3 = ref('')
+const q4 = ref('')
+const q5 = ref('')
+
+// Untuk open question (saran/kritik), misal:
+const openAnswer = ref('')
+
 function setLikert(idx, val) {
   answers.value[idx] = val
+  if (idx === 0) q1.value = val
+  if (idx === 1) q2.value = val
+  if (idx === 2) q3.value = val
+  if (idx === 4) q5.value = val
 }
 function setYesNo(idx, val) {
   answers.value[idx] = val
+  if (idx === 3) q4.value = val
 }
-function setOpen(idx, val) {
-  answers.value[idx] = val
-}
+function setOpen(idx, val) { answers.value[idx] = val }
 
-function handleSubmit() {
+async function handleSubmit() {
   if (!identitas.value.jenisKelamin || !identitas.value.jenisPasien || !identitas.value.usia) {
     alert('Harap isi semua data identitas responden!')
     return
   }
-  // Check all required questions (except open)
   for (let i = 0; i < questions.length - 1; i++) {
     if (!answers.value[i]) {
       alert('Harap isi semua pertanyaan survei!')
       return
     }
   }
-  submitted.value = true
+  if (!q1.value || !q2.value || !q3.value || !q4.value || !q5.value) {
+    alert('Harap isi semua pertanyaan survei!');
+    return;
+  }
+
+  const payload = {
+    tanggal_submit: new Date().toISOString(),
+    jenis_kelamin: identitas.value.jenisKelamin,
+    jenis_pasien: identitas.value.jenisPasien,
+    usia: Number(identitas.value.usia),
+    q1: q1.value,
+    q2: q2.value,
+    q3: q3.value,
+    q4: q4.value,
+    q5: q5.value,
+    saran: openAnswer.value
+  }
+
+  try {
+    const res = await $fetch('/api/jawaban', {
+      method: 'POST',
+      body: payload
+    })
+    if (res?.success) {
+      submitted.value = true
+    } else {
+      // Tampilkan pesan error detail dari backend
+      let msg = res.message || 'Gagal mengirim survei, silakan coba lagi nanti.'
+      if (res.received) {
+        msg += '\n\nData yang dikirim:\n' + JSON.stringify(res.received, null, 2)
+      }
+      alert(msg)
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    alert('Terjadi kesalahan, silakan coba lagi nanti.')
+  }
 }
 </script>

@@ -109,6 +109,17 @@
         Sistem Informasi Manajemen Klinik LAN made by Pusdatin 2025
       </div>
     </footer>
+
+    <div v-if="showLoginSuccess" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div class="flex flex-col items-center justify-center">
+        <img src="/lanri_.png" alt="Loading" class="h-24 w-24 animate-bounce mb-4" />
+        <div class="flex gap-4 mb-2">
+          <img src="/berakhlak.png" alt="Berakhlak" class="h-10 w-auto" />
+          <img src="/germas.png" alt="Germas" class="h-10 w-auto" />
+        </div>
+        <span class="text-white text-lg font-semibold">Login berhasil, mengalihkan...</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -136,6 +147,7 @@ const errors = reactive({
 })
 
 const isLoading = ref(false)
+const showLoginSuccess = ref(false)
 // captcha logic removed
 const lockMessage = ref('')
 
@@ -187,8 +199,10 @@ const handleLogin = async () => {
   // Set user data to store
   userStore.setUser(result.user)
 
-  alert('Login berhasil!')
-  await navigateTo(`/${slug}/dashboard`)
+  showLoginSuccess.value = true
+  setTimeout(async () => {
+    await navigateTo(`/${slug}/dashboard`)
+  }, 1000)
   } catch (error) {
   // showCaptcha removed
     alert(error.message)
