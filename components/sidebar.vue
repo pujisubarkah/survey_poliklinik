@@ -62,7 +62,18 @@
           </li>
           <!-- Divider -->
           <li class="border-t border-gray-200 my-4"></li>
-         
+
+          <!-- Dashboard -->
+          <li>
+            <NuxtLink 
+              to="/admin/dashboard" 
+              class="nav-link"
+              :class="{ 'active': $route.path === '/admin/dashboard' }"
+            >
+              <i class="fas fa-tachometer-alt nav-icon"></i>
+              <span>Dashboard</span>
+            </NuxtLink>
+          </li>
 
           <!-- Survey Results -->
           <li>
@@ -87,6 +98,27 @@
               <span>QR Code</span>
             </NuxtLink>
           </li>
+
+          <!-- Divider untuk Laporan -->
+          <li class="border-t border-gray-200 my-4"></li>
+          <!-- Laporan Section -->
+          <li>
+            <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Laporan
+            </div>
+          </li>
+          <!-- Laporan Mutasi Obat -->
+          <li>
+            <NuxtLink 
+              to="/admin/laporan-mutasi" 
+              class="nav-link"
+              :class="{ 'active': $route.path === '/admin/laporan-mutasi' }"
+            >
+              <i class="fas fa-file-alt nav-icon"></i>
+              <span>Mutasi Obat</span>
+            </NuxtLink>
+          </li>
+
           <!-- Divider -->
           <li class="border-t border-gray-200 my-4"></li>
           <!-- Master Data Section -->
