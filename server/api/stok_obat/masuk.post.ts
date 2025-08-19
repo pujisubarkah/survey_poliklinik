@@ -6,20 +6,14 @@ export default defineEventHandler(async (event) => {
   const method = event.node.req.method;
   const url = event.node.req.url || '';
 
-
-
-  // GET: histori stok
-  if (method === 'GET') {
-    const data = await db.select().from(stok_obat);
-    return { success: true, data };
-  }
-
-  // POST: tambah stok obat
-  if (method === 'POST') {
+  // POST /api/stok_obat/masuk
+  if (method === 'POST' && url.includes('/masuk')) {
     const body = await readBody(event);
-    if (!body.obat_id || body.stok_awal == null || body.stok_masuk == null) {
+    // Validasi minimal
+    if (!body.obat_id || body.stok_masuk == null || body.stok_awal == null) {
       return { success: false, message: 'Data tidak lengkap', received: body };
     }
+
     const stok_akhir = (body.stok_awal || 0) + (body.stok_masuk || 0) - (body.stok_keluar || 0);
     const inserted = await db.insert(stok_obat).values({
       obat_id: body.obat_id,
@@ -29,8 +23,11 @@ export default defineEventHandler(async (event) => {
       tanggal_update: new Date(),
       stok_akhir,
     }).returning();
+
     return { success: true, data: inserted[0] };
   }
+
+
 
   return { success: false, message: 'Method not allowed' };
 });

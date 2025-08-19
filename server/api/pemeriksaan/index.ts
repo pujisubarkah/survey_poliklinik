@@ -99,11 +99,17 @@ export default defineEventHandler(async (event) => {
       return { success: true, data: inserted };
     } catch (err) {
       console.error('POST /pemeriksaan error:', err);
+      try {
+        const body = await readBody(event);
+        console.log('POST /pemeriksaan received body:', body);
+      } catch (e) {
+        console.log('POST /pemeriksaan error reading body:', e);
+      }
       event.node.res.statusCode = 500;
       return { 
         success: false, 
         message: err instanceof Error ? err.message : String(err), 
-        detail: err 
+        detail: err
       };
     }
   }

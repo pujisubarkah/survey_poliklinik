@@ -7,13 +7,22 @@
         <h2 class="text-xl font-semibold text-gray-800">Pemeriksaan Medis</h2>
         <p class="text-gray-600">Kelola data pemeriksaan dan rekam medis pegawai</p>
       </div>
-      <button 
-        @click="showNewExamModal = true"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-      >
-        <i class="fas fa-plus mr-2"></i>
-        Pemeriksaan Baru
-      </button>
+      <div class="flex gap-2">
+        <button 
+          @click="showNewExamModal = true"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          <i class="fas fa-plus mr-2"></i>
+          Pemeriksaan Baru
+        </button>
+        <button
+          @click="exportExcel"
+          class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          <i class="fas fa-file-excel mr-2"></i>
+          Export Excel
+        </button>
+      </div>
     </div>
 
     <!-- Filter and Search -->
@@ -386,13 +395,18 @@
                     :value="obat.nama ? getStokObat(obat.nama) : ''"
                   >
                 </div>
-                <input
+                <select
                   v-model="obat.dosis"
-                  type="text"
-                  placeholder="Dosis (3x1)"
-                  class="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-28 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   :disabled="obat.nama && getStokObat(obat.nama) === 0"
+                  required
                 >
+                  <option value="">Pilih dosis</option>
+                  <option value="1x sehari">1x sehari</option>
+                  <option value="2x sehari">2x sehari</option>
+                  <option value="3x sehari">3x sehari</option>
+                  <option value="4x sehari">4x sehari</option>
+                </select>
                 <input
                   v-model="obat.jumlah"
                   type="number"
@@ -474,6 +488,29 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import * as XLSX from 'xlsx'
+// Export Excel function
+const exportExcel = () => {
+  // Siapkan data untuk export
+  const data = filteredExams.value.map(exam => ({
+    Nama: exam.pasien?.nama || '',
+    NIP: exam.pasien?.nip || '',
+    'Unit Kerja': exam.pasien?.unitKerja || '',
+    'Tanggal Pemeriksaan': exam.tanggal_pemeriksaan,
+    'Waktu Pemeriksaan': exam.waktu_pemeriksaan,
+    'Jenis Pemeriksaan': exam.jenis_pemeriksaan,
+    Keluhan: exam.keluhan,
+    Diagnosis: exam.nama_diagnosa || '',
+    Tindakan: exam.tindakan,
+    Dokter: exam.dokter,
+    Status: exam.status,
+    Obat: (exam.obat && Array.isArray(exam.obat)) ? exam.obat.map(o => `${o.nama_obat} (${o.dosis}, ${o.jumlah})`).join('; ') : ''
+  }))
+  const worksheet = XLSX.utils.json_to_sheet(data)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Pemeriksaan')
+  XLSX.writeFile(workbook, 'data_pemeriksaan.xlsx')
+}
 
 // Set layout
 definePageMeta({

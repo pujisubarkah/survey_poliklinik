@@ -1,5 +1,56 @@
 <!-- pages/admin/master-obat.vue -->
 <template>
+    <!-- Modal Tambah Master Obat -->
+    <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg max-w-md w-full mx-4 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Tambah Master Obat</h3>
+          <button @click="closeAddModal" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form @submit.prevent="submitMasterObat">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nama Obat</label>
+            <input v-model="formObat.nama_obat" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Nama Obat" />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Kandungan Aktif</label>
+            <input v-model="formObat.kandungan_aktif" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Kandungan Aktif" />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Kategori Obat</label>
+            <select v-model="formObat.kategori_obat" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+              <option value="">Pilih Kategori</option>
+              <option value="Antibiotik">Antibiotik</option>
+              <option value="Analgesik">Analgesik</option>
+              <option value="Antihistamin">Antihistamin</option>
+              <option value="Vitamin">Vitamin</option>
+              <option value="Antacid">Antacid</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Bentuk Sediaan</label>
+            <select v-model="formObat.kategori_sediaan" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+              <option value="">Pilih Bentuk</option>
+              <option value="Tablet">Tablet</option>
+              <option value="Kapsul">Kapsul</option>
+              <option value="Sirup">Sirup</option>
+              <option value="Injeksi">Injeksi</option>
+              <option value="Salep">Salep</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Merk (opsional)</label>
+            <input v-model="formObat.merk" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Merk" />
+          </div>
+          <div class="flex justify-end gap-2">
+            <button type="button" @click="closeAddModal" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Batal</button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
   <div>
     <!-- Action Bar -->
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -218,6 +269,53 @@
 </template>
 
 <script setup>
+// Modal Tambah Master Obat
+const formObat = ref({
+  nama_obat: '',
+  kandungan_aktif: '',
+  kategori_obat: '',
+  kategori_sediaan: '',
+  merk: ''
+})
+
+const closeAddModal = () => {
+  showAddModal.value = false
+  formObat.value = { nama_obat: '', kandungan_aktif: '', kategori_obat: '', kategori_sediaan: '', merk: '' }
+}
+
+const submitMasterObat = async () => {
+  if (!formObat.value.nama_obat || !formObat.value.kandungan_aktif || !formObat.value.kategori_obat || !formObat.value.kategori_sediaan) return
+  try {
+    const res = await $fetch('/api/master_obat', {
+      method: 'POST',
+      body: formObat.value
+    })
+    if (res.success) {
+      alert('Master obat berhasil ditambahkan!')
+      closeAddModal()
+      // Refresh data
+      try {
+        const refresh = await $fetch('/api/master_obat')
+        if (refresh.success) {
+          obatData.value = refresh.data.map(item => ({
+            id: item.id,
+            nama: item.nama_obat,
+            bahan_aktif: item.kandungan_aktif,
+            kategori: item.kategori_obat,
+            bentuk_sediaan: item.kategori_sediaan,
+            stok: item.stok_akhir,
+            tanggal_update: item.tanggal_update,
+            status: item.stok_akhir > 0 ? 'Tersedia' : 'Habis',
+          }))
+        }
+      } catch (e) {}
+    } else {
+      alert(res.message || 'Gagal menambah master obat')
+    }
+  } catch (e) {
+    alert('Terjadi error saat menambah master obat')
+  }
+}
 
 import { ref, computed, onMounted } from 'vue'
 
@@ -294,20 +392,76 @@ const obatStokRendah = computed(() => {
 })
 
 // Methods
-const editObat = (obat) => {
-  console.log('Edit obat:', obat)
-  // Implement edit functionality
-}
-
-const deleteObat = (id) => {
-  if (confirm('Apakah Anda yakin ingin menghapus obat ini?')) {
-    obatData.value = obatData.value.filter(o => o.id !== id)
+// Edit stok obat
+const editObat = async (obat) => {
+  const stokBaru = prompt('Masukkan stok baru untuk obat ini:', obat.stok)
+  if (stokBaru == null || isNaN(Number(stokBaru))) return
+  try {
+    const res = await $fetch(`/api/stok_obat/${obat.id}`, {
+      method: 'PUT',
+      body: { stok_akhir: Number(stokBaru) }
+    })
+    if (res.success) {
+      alert('Stok obat berhasil diupdate!')
+      refreshObat()
+    } else {
+      alert(res.message || 'Gagal update stok obat')
+    }
+  } catch (e) {
+    alert('Terjadi error saat update stok obat')
   }
 }
 
-const viewDetail = (obat) => {
-  console.log('View detail obat:', obat)
-  // Implement view detail functionality
+// Delete stok obat
+const deleteObat = async (id) => {
+  if (confirm('Apakah Anda yakin ingin menghapus stok obat ini?')) {
+    try {
+      const res = await $fetch(`/api/stok_obat/${id}`, {
+        method: 'DELETE'
+      })
+      if (res.success) {
+        alert('Stok obat berhasil dihapus!')
+        refreshObat()
+      } else {
+        alert(res.message || 'Gagal hapus stok obat')
+      }
+    } catch (e) {
+      alert('Terjadi error saat hapus stok obat')
+    }
+  }
+}
+
+// Detail stok obat
+const viewDetail = async (obat) => {
+  try {
+    const res = await $fetch(`/api/stok_obat/${obat.id}`)
+    if (res.success && res.data) {
+      alert(`Detail Stok Obat:\nID: ${res.data.id}\nStok Awal: ${res.data.stok_awal}\nStok Masuk: ${res.data.stok_masuk}\nStok Keluar: ${res.data.stok_keluar}\nStok Akhir: ${res.data.stok_akhir}`)
+    } else {
+      alert('Data stok obat tidak ditemukan')
+    }
+  } catch (e) {
+    alert('Terjadi error saat mengambil detail stok obat')
+  }
+}
+
+// Refresh data obat
+const refreshObat = async () => {
+  try {
+    const refresh = await $fetch('/api/master_obat')
+    if (refresh.success) {
+      obatData.value = refresh.data.map(item => ({
+        id: item.id,
+        nama: item.nama_obat,
+        bahan_aktif: item.kandungan_aktif,
+        kategori: item.kategori_obat,
+        bentuk_sediaan: item.kategori_sediaan,
+        stok: item.stok_akhir,
+        tanggal_update: item.tanggal_update,
+        status: item.stok_akhir > 0 ? 'Tersedia' : 'Habis',
+      }))
+    }
+  } catch (e) {}
 }
 
 // SEO
