@@ -1115,7 +1115,7 @@ const showDetailModalFunc = async (pegawai) => {
     // Set loading state
     loadingRiwayat.value = true
     
-    // Ambil data detail pegawai dari API
+    // Ambil data detail pegawai dari API menggunakan ID
     const response = await $fetch(`/api/pegawai/${pegawai.id}`)
     console.log('Detail API response:', response) // Debug log
     
@@ -1128,20 +1128,26 @@ const showDetailModalFunc = async (pegawai) => {
       pegawaiData = pegawai
     }
     
-    // Ambil riwayat berobat berdasarkan NIP
+    // Ambil riwayat berobat berdasarkan NIP pegawai menggunakan query parameter
     try {
-      const riwayatResponse = await $fetch(`/api/pemeriksaan?pasien_nip=${pegawaiData.nip}`)
+      const riwayatResponse = await $fetch(`/api/pemeriksaan_pasien?pasien_nip=${pegawaiData.nip}`)
       console.log('Riwayat API response:', riwayatResponse) // Debug log
       
       let riwayatBerobat = []
       
+      // Handle berbagai format response
       if (Array.isArray(riwayatResponse)) {
+        // Response langsung berupa array
         riwayatBerobat = riwayatResponse
       } else if (riwayatResponse && riwayatResponse.success && Array.isArray(riwayatResponse.data)) {
+        // Response dengan success property dan data array
         riwayatBerobat = riwayatResponse.data
       } else if (riwayatResponse && Array.isArray(riwayatResponse.data)) {
+        // Response dengan data array (tanpa success check)
         riwayatBerobat = riwayatResponse.data
       }
+      
+      console.log('Raw riwayat data:', riwayatBerobat) // Debug log
       
       // Format riwayat berobat untuk tampilan
       const formattedRiwayat = riwayatBerobat.map(pemeriksaan => ({
@@ -1162,6 +1168,8 @@ const showDetailModalFunc = async (pegawai) => {
           jumlah: obat.jumlah
         })) || []
       }))
+      
+      console.log('Formatted riwayat:', formattedRiwayat) // Debug log
       
       // Tambahkan riwayat ke data pegawai
       pegawaiData.riwayatBerobat = formattedRiwayat
