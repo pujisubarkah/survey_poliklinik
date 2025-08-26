@@ -370,7 +370,7 @@
 
           <!-- Obat -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Obat *</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Obat</label>
             <div class="space-y-3">
               <div v-for="(obat, index) in newExam.obatList" :key="index" class="flex gap-2 items-start">
                 <div class="flex-1">
@@ -439,7 +439,7 @@
           <!-- Dokter dan Status -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Dokter</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Dokter/Nakes</label>
               <select
                 v-model="newExam.dokter"
                 required
@@ -448,6 +448,9 @@
                 <option value="">Pilih Dokter</option>
                   <option value="dr. Rindra Eriska Hidayat, M.K.M">dr. Rindra Eriska Hidayat, M.K.M</option>
                   <option value="dr. Yuriko Francisca">dr. Yuriko Francisca</option>
+                  <option value="Retno Wulandari, A.Mk">Retno Wulandari, A.Mk</option>
+                  <option value="Yeni Supiyanti S.Psi">Yeni Supiyanti S.Psi</option>
+                  <option value="Oktavia Puri Hapsari">Oktavia Puri Hapsari</option>
               </select>
             </div>
             <div>
@@ -601,20 +604,22 @@ const filteredExams = computed(() => {
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(exam => 
-      exam.pasien.nama.toLowerCase().includes(query) ||
-      exam.pasien.nip.includes(query) ||
-      exam.keluhan.toLowerCase().includes(query) ||
-      exam.diagnosis.toLowerCase().includes(query)
-    )
+    filtered = filtered.filter(exam => {
+      // Pastikan field ada dan sesuai struktur data
+      const nama = exam.pasien?.nama?.toLowerCase() || ''
+      const nip = exam.pasien?.nip || ''
+      const keluhan = exam.keluhan?.toLowerCase() || ''
+      const diagnosis = exam.nama_diagnosa?.toLowerCase() || ''
+      return nama.includes(query) || nip.includes(query) || keluhan.includes(query) || diagnosis.includes(query)
+    })
   }
 
   if (filterTanggal.value) {
-    filtered = filtered.filter(exam => exam.tanggalPemeriksaan === filterTanggal.value)
+    filtered = filtered.filter(exam => exam.tanggal_pemeriksaan === filterTanggal.value)
   }
 
   if (filterJenis.value) {
-    filtered = filtered.filter(exam => exam.jenisPemeriksaan === filterJenis.value)
+    filtered = filtered.filter(exam => exam.jenis_pemeriksaan === filterJenis.value)
   }
 
   if (filterStatus.value) {

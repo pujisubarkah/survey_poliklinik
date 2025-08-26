@@ -1,5 +1,41 @@
 <!-- pages/admin/master-diagnosa.vue -->
 <template>
+    <!-- Modal Tambah Diagnosa -->
+    <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg max-w-md w-full mx-4 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Tambah Diagnosa</h3>
+          <button @click="closeAddModal" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form @submit.prevent="submitDiagnosa">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Kode ICD</label>
+            <input v-model="formDiagnosa.kode_icd" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Kode ICD" />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nama Diagnosa</label>
+            <input v-model="formDiagnosa.nama_diagnosa" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Nama Diagnosa" />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+            <input v-model="formDiagnosa.kategori" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Kategori" />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select v-model="formDiagnosa.status" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+              <option value="Aktif">Aktif</option>
+              <option value="Tidak Aktif">Tidak Aktif</option>
+            </select>
+          </div>
+          <div class="flex justify-end gap-2">
+            <button type="button" @click="closeAddModal" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Batal</button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
   <div>
     <!-- Action Bar -->
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -156,6 +192,49 @@
 </template>
 
 <script setup>
+// Modal Tambah Diagnosa
+const formDiagnosa = ref({
+  kode_icd: '',
+  nama_diagnosa: '',
+  kategori: '',
+  status: 'Aktif'
+})
+
+const closeAddModal = () => {
+  showAddModal.value = false
+  formDiagnosa.value = { kode_icd: '', nama_diagnosa: '', kategori: '', status: 'Aktif' }
+}
+
+const submitDiagnosa = async () => {
+  if (!formDiagnosa.value.kode_icd || !formDiagnosa.value.nama_diagnosa || !formDiagnosa.value.kategori) return
+  try {
+    const res = await $fetch('/api/diagnosa', {
+      method: 'POST',
+      body: formDiagnosa.value
+    })
+    if (res.success) {
+      alert('Diagnosa berhasil ditambahkan!')
+      closeAddModal()
+      // Refresh data
+      try {
+        const refresh = await $fetch('/api/diagnosa')
+        if (refresh.success) {
+          diagnosaData.value = refresh.data.map(item => ({
+            id: item.id,
+            kode_icd: item.kode_icd,
+            nama: item.nama_diagnosa,
+            kategori: item.kategori,
+            status: item.status || 'Aktif',
+          }))
+        }
+      } catch (e) {}
+    } else {
+      alert(res.message || 'Gagal menambah diagnosa')
+    }
+  } catch (e) {
+    alert('Terjadi error saat menambah diagnosa')
+  }
+}
 import { ref, computed, onMounted } from 'vue'
 
 // Set layout
