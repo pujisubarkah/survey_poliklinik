@@ -1195,7 +1195,6 @@ const showDetailModalFunc = async (pegawai) => {
 
 const closeDetailModal = () => {
   showDetailModalRef.value = false
-  selectedPegawai.value = null
 }
 
 const editFromDetail = () => {
@@ -1329,28 +1328,35 @@ const resetEditForm = () => {
 
 // Handle delete pegawai menggunakan API
 const handleDeletePegawai = async (id) => {
-  if (!window.confirm('Apakah Anda yakin ingin menghapus pegawai ini? Data yang dihapus tidak dapat dikembalikan.')) {
-    return;
+  if (!confirm('Apakah Anda yakin ingin menghapus pegawai ini? Data yang dihapus tidak dapat dikembalikan.')) {
+    return
   }
-  deletingId.value = id;
+  
+  deletingId.value = id
+  
   try {
     const response = await $fetch(`/api/pegawai/${id}`, {
       method: 'DELETE'
-    });
+    })
+
     if (response && response.success) {
-      await loadPegawaiData();
+      // Reload data setelah delete
+      await loadPegawaiData()
+
+      // Reset pagination jika perlu
       if (currentPage.value > totalPages.value && totalPages.value > 0) {
-        currentPage.value = totalPages.value;
+        currentPage.value = totalPages.value
       }
-      window.alert(response.message || 'Data pegawai berhasil dihapus!');
+
+      alert(response.message || 'Data pegawai berhasil dihapus!')
     } else {
-      window.alert(response?.message || 'Gagal menghapus data pegawai');
+      alert(response?.message || 'Gagal menghapus data pegawai')
     }
   } catch (error) {
-    console.error('Error deleting pegawai:', error);
-    window.alert('Terjadi kesalahan saat menghapus data pegawai');
+    console.error('Error deleting pegawai:', error)
+    alert('Terjadi kesalahan saat menghapus data pegawai')
   } finally {
-    deletingId.value = null;
+    deletingId.value = null
   }
 }
 
