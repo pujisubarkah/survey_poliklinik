@@ -462,19 +462,20 @@
           >
             Tutup
           </button>
-          <button 
-            @click="editFromDetail"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-          >
-            <i class="fas fa-edit mr-2"></i>
-            Edit Data
-          </button>
+         
           <button 
             @click="addMedicalRecord"
             class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
           >
             <i class="fas fa-plus mr-2"></i>
             Tambah Riwayat Berobat
+          </button>
+          <button 
+            @click="downloadDetailPegawai"
+            class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-md transition-colors"
+          >
+            <i class="fas fa-download mr-2"></i>
+            Download Detail
           </button>
         </div>
       </div>
@@ -506,10 +507,6 @@
           <form @submit.prevent="handleSubmitPegawai">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <!-- Data Pegawai -->
-              <div class="md:col-span-2 mb-4">
-                <h4 class="text-md font-semibold text-gray-800 mb-4 border-b pb-2">Data Pegawai</h4>
-              </div>
-              
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Nama Lengkap <span class="text-red-500">*</span>
@@ -721,6 +718,7 @@
               </button>
             </div>
           </form>
+        </div>
         </div>
       </div>
     </div>
@@ -969,7 +967,6 @@
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -1162,7 +1159,7 @@ const showDetailModalFunc = async (pegawai) => {
         tindakan: pemeriksaan.tindakan,
         dokter: pemeriksaan.dokter,
         status: pemeriksaan.status,
-        obat_list: pemeriksaan.obat_list?.map(obat => ({
+        obat_list: pemeriksaan.obat?.map(obat => ({
           nama_obat: obat.nama_obat,
           dosis: obat.dosis,
           jumlah: obat.jumlah
@@ -1195,6 +1192,7 @@ const showDetailModalFunc = async (pegawai) => {
 
 const closeDetailModal = () => {
   showDetailModalRef.value = false
+  selectedPegawai.value = null
 }
 
 const editFromDetail = () => {
@@ -1209,6 +1207,31 @@ const addMedicalRecord = () => {
   closeDetailModal()
   // Implement add medical record functionality
   console.log('Add medical record for:', selectedPegawai.value.nama)
+}
+
+// Download detail pegawai dan riwayat berobat sebagai file JSON
+const downloadDetailPegawai = () => {
+  if (!selectedPegawai.value) return
+  const data = {
+    nama: selectedPegawai.value.nama,
+    nip: selectedPegawai.value.nip,
+    unit_kerja: selectedPegawai.value.nama_unit_kerja,
+    jabatan: selectedPegawai.value.jabatan,
+    golongan: selectedPegawai.value.golongan,
+    eselon: selectedPegawai.value.eselon,
+    detail: selectedPegawai.value.detail,
+    riwayatBerobat: selectedPegawai.value.riwayatBerobat
+  }
+  const json = JSON.stringify(data, null, 2)
+  const blob = new Blob([json], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `detail_pegawai_${selectedPegawai.value.nip || selectedPegawai.value.nama}.json`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 
 const formatDate = (dateString) => {

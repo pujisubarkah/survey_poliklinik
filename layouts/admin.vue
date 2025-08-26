@@ -14,6 +14,10 @@
 <script setup>
 import HeaderAdmin from '@/components/header.vue'
 import SidebarAdmin from '@/components/sidebar.vue'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+userStore.hydrate()
 </script>
 
 <style>

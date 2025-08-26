@@ -9,7 +9,7 @@
       </div>
       <div class="flex gap-2">
         <button 
-          @click="showNewExamModal = true"
+          @click="handleOpenNewExamModal"
           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
         >
           <i class="fas fa-plus mr-2"></i>
@@ -156,13 +156,13 @@
                 <div class="flex items-center">
                   <div class="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                     <span class="text-white font-medium text-sm">
-                      {{ exam.pasien.nama.charAt(0).toUpperCase() }}
+                      {{ exam.pasien?.nama ? exam.pasien.nama.charAt(0).toUpperCase() : '-' }}
                     </span>
-                    </div>
+                  </div>
                   <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">{{ exam.pasien.nama }}</div>
-                    <div class="text-sm text-gray-500">{{ exam.pasien.nip }}</div>
-                    <div class="text-sm text-gray-500">{{ exam.pasien.unitKerja }}</div>
+                    <div class="text-sm font-medium text-gray-900">{{ exam.pasien?.nama || '-' }}</div>
+                    <div class="text-sm text-gray-500">{{ exam.pasien_nip || '-' }}</div>
+                    <div class="text-sm text-gray-500">{{ exam.pasien?.unit_kerja || '-' }}</div>
                   </div>
                 </div>
               </td>
@@ -195,20 +195,7 @@
                   >
                     <i class="fas fa-eye"></i>
                   </button>
-                  <button 
-                    @click="editExam(exam)"
-                    class="text-green-600 hover:text-green-900"
-                    title="Edit Pemeriksaan"
-                  >
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button 
-                    @click="printExam(exam)"
-                    class="text-purple-600 hover:text-purple-900"
-                    title="Cetak Hasil"
-                  >
-                    <i class="fas fa-print"></i>
-                  </button>
+                 
                   <button 
                     @click="deleteExam(exam.id)"
                     class="text-red-600 hover:text-red-900"
@@ -243,8 +230,8 @@
     </div>
 
     <!-- Modal Pemeriksaan Baru -->
-    <div v-if="showNewExamModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div v-if="showNewExamModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+      <div class="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl p-2">
         <div class="flex items-center justify-between p-6 border-b">
           <h3 class="text-lg font-semibold text-gray-900">Pemeriksaan Baru</h3>
           <button @click="closeNewExamModal" class="text-gray-400 hover:text-gray-600">
@@ -486,6 +473,87 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal Detail Pemeriksaan -->
+    <div v-if="showDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+      <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-0 overflow-hidden animate-fadeIn">
+        <div class="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-blue-500 to-purple-600">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fas fa-notes-medical"></i>
+            Detail Pemeriksaan
+          </h3>
+          <button @click="showDetailModal = false" class="text-white hover:text-gray-200 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <div v-if="detailExam" class="px-6 py-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                  <i class="fas fa-user-md"></i>
+                </div>
+                <div>
+                  <div class="text-lg font-semibold text-gray-800">{{ detailExam.pasien?.nama || '-' }}</div>
+                  <div class="text-sm text-gray-500">NIP: {{ detailExam.pasien_nip || '-' }}</div>
+                  <div class="text-sm text-gray-500">Unit: {{ detailExam.pasien?.unit_kerja || '-' }}</div>
+                </div>
+              </div>
+              <div class="mt-2">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 mr-2">
+                  {{ detailExam.jenis_pemeriksaan }}
+                </span>
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                  {{ detailExam.status }}
+                </span>
+              </div>
+            </div>
+            <div>
+              <div class="mb-2">
+                <span class="font-medium text-gray-700">Tanggal:</span>
+                <span class="text-gray-900">{{ formatDateTime(detailExam.tanggal_pemeriksaan, detailExam.waktu_pemeriksaan) }}</span>
+              </div>
+              <div class="mb-2">
+                <span class="font-medium text-gray-700">Dokter:</span>
+                <span class="text-gray-900">{{ detailExam.dokter }}</span>
+              </div>
+              <div class="mb-2">
+                <span class="font-medium text-gray-700">Diagnosis:</span>
+                <span class="text-gray-900">{{ detailExam.nama_diagnosa }}</span>
+                <span v-if="detailExam.kode_icd" class="text-xs text-blue-500 ml-1">({{ detailExam.kode_icd }})</span>
+              </div>
+              <div class="mb-2">
+                <span class="font-medium text-gray-700">Tindakan:</span>
+                <span class="text-gray-900">{{ detailExam.tindakan }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <span class="font-medium text-gray-700">Keluhan:</span>
+            <span class="text-gray-900">{{ detailExam.keluhan }}</span>
+          </div>
+          <div v-if="detailExam.obat && detailExam.obat.length" class="mt-6">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="fas fa-pills text-purple-600"></i>
+              <span class="font-semibold text-purple-700">Obat yang Diberikan:</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div v-for="o in detailExam.obat" :key="o.id" class="bg-purple-50 rounded-lg p-3 border border-purple-100">
+                <div class="font-medium text-gray-900">{{ o.nama_obat }}</div>
+                <div class="text-xs text-gray-600"><span class="font-medium">Dosis:</span> {{ o.dosis }}</div>
+                <div class="text-xs text-gray-600"><span class="font-medium">Jumlah:</span> {{ o.jumlah }}</div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="mt-6">
+            <div class="flex items-center gap-2 text-gray-500 italic">
+              <i class="fas fa-info-circle"></i>
+              Tidak ada obat yang diberikan
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -526,6 +594,23 @@ const filterTanggal = ref('')
 const filterJenis = ref('')
 const filterStatus = ref('')
 const showNewExamModal = ref(false)
+const showDetailModal = ref(false)
+const detailExam = ref(null)
+
+const handleOpenNewExamModal = () => {
+  console.log('Klik tombol Pemeriksaan Baru');
+  showNewExamModal.value = true;
+  setTimeout(() => {
+    console.log('showNewExamModal:', showNewExamModal.value);
+  }, 100);
+}
+
+watch(showNewExamModal, (val) => {
+  console.log('showNewExamModal berubah:', val);
+  if (val) {
+    console.log('Modal Pemeriksaan Baru seharusnya muncul');
+  }
+});
 
 // Form data for new examination
 const newExam = ref({
@@ -643,8 +728,12 @@ const pendingExams = computed(() => {
 })
 
 const totalPatients = computed(() => {
-  const uniquePatients = new Set(examData.value.map(exam => exam.pasien.nip))
-  return uniquePatients.size
+  const uniquePatients = new Set(
+    examData.value
+      .map(exam => exam.pasien?.nip)
+      .filter(nip => nip)
+  );
+  return uniquePatients.size;
 })
 
 // Methods
@@ -673,14 +762,41 @@ const getStatusColor = (status) => {
   }
 }
 
-const viewExam = (exam) => {
-  console.log('View exam:', exam)
-  // Implement view functionality
+const viewExam = async (exam) => {
+  try {
+    const res = await $fetch(`/api/pemeriksaan_pasien/${exam.id}`)
+    if (res && res.success && res.data) {
+      detailExam.value = res.data
+      showDetailModal.value = true
+    } else {
+      alert('Gagal mengambil detail pemeriksaan')
+    }
+  } catch (e) {
+    alert('Terjadi error saat mengambil detail')
+  }
 }
 
-const editExam = (exam) => {
-  console.log('Edit exam:', exam)
-  // Implement edit functionality
+const editExam = async (exam) => {
+  // Contoh: tampilkan form edit, lalu submit ke API
+  const updated = { ...exam } // Anda bisa tampilkan modal/form edit sesuai kebutuhan
+  try {
+    const res = await $fetch(`/api/pemeriksaan/${exam.id}`, {
+      method: 'PUT',
+      body: updated
+    })
+    if (res && res.success) {
+      alert('Data pemeriksaan berhasil diupdate!')
+      // Refresh data
+      const getRes = await $fetch('/api/pemeriksaan')
+      if (getRes.success) {
+        examData.value = getRes.data
+      }
+    } else {
+      alert(res?.message || 'Gagal update data pemeriksaan')
+    }
+  } catch (e) {
+    alert('Terjadi error saat update data pemeriksaan')
+  }
 }
 
 const printExam = (exam) => {
@@ -688,9 +804,24 @@ const printExam = (exam) => {
   // Implement print functionality
 }
 
-const deleteExam = (id) => {
-  if (confirm('Apakah Anda yakin ingin menghapus data pemeriksaan ini?')) {
-    examData.value = examData.value.filter(exam => exam.id !== id)
+const deleteExam = async (id) => {
+  if (!confirm('Apakah Anda yakin ingin menghapus data pemeriksaan ini?')) return;
+  try {
+    const res = await $fetch(`/api/pemeriksaan/${id}`, {
+      method: 'DELETE'
+    })
+    if (res && res.success) {
+      alert('Data pemeriksaan berhasil dihapus!')
+      // Refresh data
+      const getRes = await $fetch('/api/pemeriksaan')
+      if (getRes.success) {
+        examData.value = getRes.data
+      }
+    } else {
+      alert(res?.message || 'Gagal menghapus data pemeriksaan')
+    }
+  } catch (e) {
+    alert('Terjadi error saat menghapus data pemeriksaan')
   }
 }
 
@@ -863,5 +994,21 @@ tbody tr:hover {
 .text-red-600:hover {
   transform: scale(1.1);
   transition: transform 0.2s ease-in-out;
+}
+
+/* Animation for modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
 }
 </style>
