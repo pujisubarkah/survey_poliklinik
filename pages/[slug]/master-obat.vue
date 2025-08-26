@@ -1,3 +1,4 @@
+
 <!-- pages/admin/master-obat.vue -->
 <template>
     <!-- Modal Tambah Master Obat -->
@@ -9,6 +10,38 @@
             <i class="fas fa-times"></i>
           </button>
         </div>
+    <!-- Modal Tambah Stok Obat (global, di luar v-for) -->
+    <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl max-w-md w-full mx-4 p-0 shadow-2xl border border-gray-200">
+        <div class="flex items-center justify-between px-6 pt-6 pb-2 bg-green-50 rounded-t-xl border-b border-gray-100">
+          <h3 class="text-lg font-bold text-green-700 flex items-center">
+            <i class="fas fa-plus-circle text-green-500 mr-2"></i> Tambah Stok Obat
+          </h3>
+          <button @click="closeEditModal" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+        <div class="px-6 pt-4 pb-2">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Obat</label>
+            <div class="flex items-center gap-2">
+              <i class="fas fa-pills text-green-400"></i>
+              <input v-model="editObatForm.nama_obat" type="text" disabled class="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 font-semibold text-green-700" />
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Stok Masuk</label>
+            <div class="flex gap-2">
+              <input v-model.number="editObatForm.stok_masuk" type="number" min="1" class="w-full px-3 py-2 border border-green-300 rounded-md" placeholder="Jumlah masuk" />
+              <button type="button" @click="submitStokMasuk" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-semibold flex items-center gap-1"><i class="fas fa-plus"></i> Simpan</button>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 mt-6 border-t pt-4">
+            <button type="button" @click="closeEditModal" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Batal</button>
+          </div>
+        </div>
+      </div>
+    </div>
         <form @submit.prevent="submitMasterObat">
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">Nama Obat</label>
@@ -198,10 +231,10 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex space-x-2">
                   <button 
-                    @click="editObat(obat)"
-                    class="text-blue-600 hover:text-blue-900"
+                    @click="openEditModal(obat)"
+                    class="text-green-600 hover:text-green-900"
                   >
-                    <i class="fas fa-edit"></i>
+                    <i class="fas fa-plus"></i>
                   </button>
                   <button 
                     @click="deleteObat(obat.id)"
@@ -224,6 +257,38 @@
     </div>
 
     <!-- Pagination -->
+    <!-- Modal Tambah Stok Obat (global, di luar v-for) -->
+    <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl max-w-md w-full mx-4 p-0 shadow-2xl border border-gray-200">
+        <div class="flex items-center justify-between px-6 pt-6 pb-2 bg-green-50 rounded-t-xl border-b border-gray-100">
+          <h3 class="text-lg font-bold text-green-700 flex items-center">
+            <i class="fas fa-plus-circle text-green-500 mr-2"></i> Tambah Stok Obat
+          </h3>
+          <button @click="closeEditModal" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+        <div class="px-6 pt-4 pb-2">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Obat</label>
+            <div class="flex items-center gap-2">
+              <i class="fas fa-pills text-green-400"></i>
+              <input v-model="editObatForm.nama_obat" type="text" disabled class="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 font-semibold text-green-700" />
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Stok Masuk</label>
+            <div class="flex gap-2">
+              <input v-model.number="editObatForm.stok_masuk" type="number" min="1" class="w-full px-3 py-2 border border-green-300 rounded-md" placeholder="Jumlah masuk" />
+              <button type="button" @click="submitStokMasuk" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-semibold flex items-center gap-1"><i class="fas fa-plus"></i> Simpan</button>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 mt-6 border-t pt-4">
+            <button type="button" @click="closeEditModal" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Batal</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="mt-6 flex items-center justify-between">
       <div class="text-sm text-gray-700">
         Menampilkan {{ filteredObat.length }} dari {{ filteredObatAll.length }} data (Halaman {{ currentPage }} dari {{ totalPages }})
@@ -286,29 +351,43 @@ const closeAddModal = () => {
 const submitMasterObat = async () => {
   if (!formObat.value.nama_obat || !formObat.value.kandungan_aktif || !formObat.value.kategori_obat || !formObat.value.kategori_sediaan) return
   try {
+    // 1. Tambah master obat
     const res = await $fetch('/api/master_obat', {
       method: 'POST',
       body: formObat.value
     })
-    if (res.success) {
-      alert('Master obat berhasil ditambahkan!')
-      closeAddModal()
-      // Refresh data
-      try {
-        const refresh = await $fetch('/api/master_obat')
-        if (refresh.success) {
-          obatData.value = refresh.data.map(item => ({
-            id: item.id,
-            nama: item.nama_obat,
-            bahan_aktif: item.kandungan_aktif,
-            kategori: item.kategori_obat,
-            bentuk_sediaan: item.kategori_sediaan,
-            stok: item.stok_akhir,
-            tanggal_update: item.tanggal_update,
-            status: item.stok_akhir > 0 ? 'Tersedia' : 'Habis',
-          }))
+    if (res.success && res.data && res.data.id) {
+      // 2. Buat stok awal
+      const stokRes = await $fetch('/api/stok_obat', {
+        method: 'PUT',
+        body: {
+          id_obat: res.data.id,
+          stok_awal: 0 // Atau bisa diisi sesuai kebutuhan
         }
-      } catch (e) {}
+      })
+      if (stokRes.success && stokRes.data && stokRes.data.id_stok) {
+        alert('Master obat & stok awal berhasil dibuat!')
+        closeAddModal()
+        // 3. Refresh data dan mapping id_stok
+        try {
+          const refresh = await $fetch('/api/master_obat')
+          if (refresh.success) {
+            obatData.value = refresh.data.map(item => ({
+              id: item.id,
+              id_stok: item.id_stok || stokRes.data.id_stok,
+              nama: item.nama_obat,
+              bahan_aktif: item.kandungan_aktif,
+              kategori: item.kategori_obat,
+              bentuk_sediaan: item.kategori_sediaan,
+              stok: item.stok_akhir,
+              tanggal_update: item.tanggal_update,
+              status: item.stok_akhir > 0 ? 'Tersedia' : 'Habis',
+            }))
+          }
+        } catch (e) {}
+      } else {
+        alert('Master obat berhasil, tapi gagal membuat stok awal!')
+      }
     } else {
       alert(res.message || 'Gagal menambah master obat')
     }
@@ -318,6 +397,67 @@ const submitMasterObat = async () => {
 }
 
 import { ref, computed, onMounted } from 'vue'
+
+// Modal Tambah Stok Obat
+const showEditModal = ref(false)
+const editObatForm = ref({
+  id: null,
+  nama_obat: '',
+  stok_masuk: 1
+})
+
+const openEditModal = (obat) => {
+  // Cari id stok dari data detail jika tersedia
+  let idStok = obat.id_stok || obat.id_stok_obat || obat.id_stokobat || obat.id_stok || null;
+  if (!idStok && obat.id) idStok = obat.id;
+  if (!idStok) {
+    console.error('ID stok tidak ditemukan pada data obat:', obat);
+    alert('ID stok tidak ditemukan, silakan cek data obat!');
+    return;
+  }
+  editObatForm.value = {
+    id: idStok,
+    nama_obat: obat.nama,
+    stok_masuk: 1
+  }
+  showEditModal.value = true
+}
+
+const closeEditModal = () => {
+  showEditModal.value = false
+  editObatForm.value = { id: null, nama_obat: '', stok_masuk: 1 }
+}
+
+const submitStokMasuk = async () => {
+  if (!editObatForm.value.id || !editObatForm.value.stok_masuk || editObatForm.value.stok_masuk < 1) {
+    alert('ID stok tidak ditemukan, cek data obat!');
+    console.error('ID yang dikirim:', editObatForm.value.id);
+    return;
+  }
+  console.log('Submit stok masuk, ID:', editObatForm.value.id, 'Jumlah:', editObatForm.value.stok_masuk);
+  try {
+    const res = await $fetch('/api/stok_obat/masuk.post', {
+      method: 'POST',
+      body: {
+        id: editObatForm.value.id,
+        jumlah: editObatForm.value.stok_masuk
+      }
+    })
+    if (res.success) {
+      // Update table instantly
+      const idx = obatData.value.findIndex(o => o.id === editObatForm.value.id)
+      if (idx !== -1) {
+        obatData.value[idx].stok += editObatForm.value.stok_masuk
+        obatData.value[idx].status = obatData.value[idx].stok > 0 ? 'Tersedia' : 'Habis'
+      }
+      closeEditModal()
+    } else {
+      alert(res.message || 'Gagal menambah stok obat')
+    }
+  } catch (e) {
+    alert('Terjadi error saat menambah stok obat')
+  }
+}
 
 // Set layout
 definePageMeta({
