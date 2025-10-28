@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
   // PUT: update stok obat by id
   if (method === 'PUT') {
     const body = await readBody(event);
+    body.tanggal_update = new Date();
     const updated = await db.update(stok_obat).set(body).where(eq(stok_obat.id, id)).returning();
     return { success: true, data: updated[0] };
   }

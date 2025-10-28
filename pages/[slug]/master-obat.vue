@@ -359,13 +359,15 @@ const submitMasterObat = async () => {
     if (res.success && res.data && res.data.id) {
       // 2. Buat stok awal
       const stokRes = await $fetch('/api/stok_obat', {
-        method: 'PUT',
+        method: 'POST',
         body: {
-          id_obat: res.data.id,
-          stok_awal: 0 // Atau bisa diisi sesuai kebutuhan
+          obat_id: res.data.id,
+          stok_awal: 0,
+          stok_masuk: 0,
+          stok_keluar: 0
         }
       })
-      if (stokRes.success && stokRes.data && stokRes.data.id_stok) {
+      if (stokRes.success && stokRes.data && stokRes.data.id) {
         alert('Master obat & stok awal berhasil dibuat!')
         closeAddModal()
         // 3. Refresh data dan mapping id_stok
@@ -374,7 +376,7 @@ const submitMasterObat = async () => {
           if (refresh.success) {
             obatData.value = refresh.data.map(item => ({
               id: item.id,
-              id_stok: item.id_stok || stokRes.data.id_stok,
+              id_stok: item.id_stok || stokRes.data.id,
               nama: item.nama_obat,
               bahan_aktif: item.kandungan_aktif,
               kategori: item.kategori_obat,
@@ -436,26 +438,50 @@ const submitStokMasuk = async () => {
   }
   console.log('Submit stok masuk, ID:', editObatForm.value.id, 'Jumlah:', editObatForm.value.stok_masuk);
   try {
-    const res = await $fetch('/api/stok_obat/masuk.post', {
-      method: 'POST',
+    // Ambil data stok saat ini
+    const currentStok = await $fetch(`/api/stok_obat/${editObatForm.value.id}`);
+    if (!currentStok.success || !currentStok.data) {
+      alert('Gagal mengambil data stok saat ini');
+      return;
+    }
+    const stokAwal = currentStok.data.stok_awal || 0;
+    const stokMasukBaru = (currentStok.data.stok_masuk || 0) + editObatForm.value.stok_masuk;
+    const stokKeluar = currentStok.data.stok_keluar || 0;
+    const stokAkhirBaru = stokAwal + stokMasukBaru - stokKeluar;
+
+    // Update stok
+    const res = await $fetch(`/api/stok_obat/${editObatForm.value.id}`, {
+      method: 'PUT',
       body: {
-        id: editObatForm.value.id,
-        jumlah: editObatForm.value.stok_masuk
+        stok_masuk: stokMasukBaru
       }
-    })
+    });
     if (res.success) {
-      // Update table instantly
-      const idx = obatData.value.findIndex(o => o.id === editObatForm.value.id)
-      if (idx !== -1) {
-        obatData.value[idx].stok += editObatForm.value.stok_masuk
-        obatData.value[idx].status = obatData.value[idx].stok > 0 ? 'Tersedia' : 'Habis'
-      }
-      closeEditModal()
+      // Refresh data untuk update stok
+      try {
+        const refresh = await $fetch('/api/master_obat');
+        if (refresh.success) {
+          obatData.value = refresh.data.map(item => ({
+            id: item.id,
+            id_stok: item.id_stok,
+            nama: item.nama_obat,
+            bahan_aktif: item.kandungan_aktif,
+            kategori: item.kategori_obat,
+            bentuk_sediaan: item.kategori_sediaan,
+            stok: item.stok_akhir,
+            tanggal_update: item.tanggal_update,
+            status: item.stok_akhir > 0 ? 'Tersedia' : 'Habis',
+          }));
+        }
+      } catch (e) {}
+      closeEditModal();
+      alert('Stok obat berhasil ditambahkan!');
     } else {
-      alert(res.message || 'Gagal menambah stok obat')
+      alert(res.message || 'Gagal menambah stok obat');
     }
   } catch (e) {
-    alert('Terjadi error saat menambah stok obat')
+    console.error('Error:', e);
+    alert('Terjadi error saat menambah stok obat');
   }
 }
 

@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
       obatList.map(async (obat) => {
         const stok = await db
           .select({
+            id: stok_obat.id,
             stok_akhir: stok_obat.stok_akhir,
             tanggal_update: stok_obat.tanggal_update,
           })
@@ -24,6 +25,7 @@ export default defineEventHandler(async (event) => {
           .limit(1);
         return {
           ...obat,
+          id_stok: stok[0]?.id ?? null,
           stok_akhir: stok[0]?.stok_akhir ?? 0,
           tanggal_update: stok[0]?.tanggal_update ?? null,
         };
