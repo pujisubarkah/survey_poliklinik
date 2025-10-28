@@ -33,8 +33,7 @@
             <img src="/lanri_.png" alt="LAN RI" class="h-6 w-auto">
           </div>
           <div>
-            <h2 class="text-lg font-bold text-white">Admin Panel</h2>
-            <p class="text-sm text-blue-100">Klinik LAN Jakarta</p>
+            <h2 class="text-lg font-bold text-white">Klinik LAN Jakarta</h2>
           </div>
         </div>
         <!-- Close button for mobile -->
